@@ -545,6 +545,7 @@ button:disabled { opacity: 0.45; cursor: not-allowed; filter: none; }
       <div><span>Decides</span><span>ADR-0015, ADR-0017</span></div>
       <div><span>Blocked on</span><span>G-03 schema freeze</span></div>
       <div><span>Stack</span><span>Laravel 13 · PostgreSQL 16 + PostGIS · Python</span></div>
+      <div><span>Schema</span><span><a href="schema.html">Every table, column by column →</a></span></div>
     </div>
   </div>
 </header>
@@ -921,6 +922,7 @@ UPDATE pipeline_runs
     <section id="database">
       <h2><span class="num">§6</span>Database architecture</h2>
       <p class="lede">Twenty tables in three groups, and the boundary between the groups is the write-ownership boundary. Not yet frozen — this is what the freeze session reviews.</p>
+      <p>This section is the reasoning. For the full column lists, every foreign key with its cardinality and delete behaviour, and the schema map, see <a href="schema.html"><strong>the schema reference</strong></a> — a companion page built as a data dictionary rather than an argument.</p>
 
       <h3>What the schema has to survive</h3>
       <p>Measured field coverage from the M1 feasibility runs. It is the reason sparsity is treated as the normal case rather than an edge case:</p>
