@@ -461,6 +461,74 @@ button:disabled { opacity: 0.45; cursor: not-allowed; filter: none; }
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }
+
+/* ---------- erd ---------- */
+
+.erd {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 0.9rem;
+  margin: 1.6rem 0 1.2rem;
+}
+.erd-group {
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--surface);
+  padding: 0.75rem;
+  display: grid;
+  gap: 0.55rem;
+  align-content: start;
+}
+.erd-group > h5 {
+  font-family: var(--f-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin: 0 0 0.15rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--line);
+}
+.erd-group.owned-py > h5 { color: var(--signal); }
+.erd-group.owned-both > h5 { color: var(--accent); }
+.erd-table {
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--line-strong);
+  border-radius: 3px;
+  padding: 0.45rem 0.6rem;
+  background: var(--ground);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+.erd-table b {
+  font-family: var(--f-mono);
+  font-size: 0.79rem;
+  font-weight: 500;
+  display: block;
+}
+.erd-table span { color: var(--text-3); font-size: 0.74rem; }
+.erd-table.py { border-left-color: var(--signal); }
+.erd-table.app { border-left-color: var(--accent); }
+.erd-table.both { border-left-color: var(--danger); }
+.erd-key {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.1rem;
+  font-size: 0.76rem;
+  color: var(--text-3);
+  margin: 0.2rem 0 1.4rem;
+}
+.erd-key i { font-style: normal; display: inline-flex; align-items: center; gap: 0.35rem; }
+.erd-key i::before {
+  content: "";
+  width: 0.7rem;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--line-strong);
+}
+.erd-key i.py::before { background: var(--signal); }
+.erd-key i.app::before { background: var(--accent); }
+.erd-key i.both::before { background: var(--danger); }
 </style>
 
 </head>
@@ -501,8 +569,8 @@ button:disabled { opacity: 0.45; cursor: not-allowed; filter: none; }
       <ol>
         <li><strong>Is the database a legitimate integration boundary, or are we avoiding an interface we should have written?</strong> (§3)</li>
         <li><strong>Does an append-only claims log plus a resolver justify its complexity</strong> against simply writing rows and keeping an audit table? (§5)</li>
-        <li><strong>Will Postgres full-text search plus PostGIS hold</strong> for a public directory, or are we deferring a search engine we will regret not having? (§7)</li>
-        <li><strong>Is per-role write ownership worth the friction</strong> it adds to every migration and every local environment? (§8)</li>
+        <li><strong>Will Postgres full-text search plus PostGIS hold</strong> for a public directory, or are we deferring a search engine we will regret not having? (§8)</li>
+        <li><strong>Is per-role write ownership worth the friction</strong> it adds to every migration and every local environment? (§9)</li>
       </ol>
 
       <div class="callout">
@@ -850,8 +918,147 @@ UPDATE pipeline_runs
       <div class="notes" data-section="laravel-pg" data-title="Laravel ↔ Postgres"></div>
     </section>
 
+    <section id="database">
+      <h2><span class="num">§6</span>Database architecture</h2>
+      <p class="lede">Twenty tables in three groups, and the boundary between the groups is the write-ownership boundary. Not yet frozen — this is what the freeze session reviews.</p>
+
+      <h3>What the schema has to survive</h3>
+      <p>Measured field coverage from the M1 feasibility runs. It is the reason sparsity is treated as the normal case rather than an edge case:</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Source class</th><th class="num-col">Name</th><th class="num-col">Address</th><th class="num-col">Phone</th><th class="num-col">Age</th><th class="num-col">Days</th><th class="num-col">Dates</th><th class="num-col">Price</th><th class="num-col">Descr.</th></tr></thead>
+          <tbody>
+            <tr><td>Provider sites <span class="hint">n=54</span></td><td class="num-col">72%</td><td class="num-col">28%</td><td class="num-col">80%</td><td class="num-col">37%</td><td class="num-col">35%</td><td class="num-col"><strong>0%</strong></td><td class="num-col">24%</td><td class="num-col">28%</td></tr>
+            <tr><td>CivicRec catalogues <span class="hint">n=24</span></td><td class="num-col">0%</td><td class="num-col">0%</td><td class="num-col">88%</td><td class="num-col">0%</td><td class="num-col">0%</td><td class="num-col"><strong>0%</strong></td><td class="num-col">4%</td><td class="num-col">0%</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout warn">
+        <p><strong>Dates are 0% across every source class.</strong> The occurrence layer ships with its table, its index and its expansion action, and stays empty until enrichment feeds it. Anything that assumes dates exist is designed on hope.</p>
+      </div>
+
+      <h3>The tables</h3>
+      <div class="erd">
+        <div class="erd-group owned-py">
+          <h5>Ingestion</h5>
+          <div class="erd-table app"><b>sources</b><span>registry · terms verdict + quoted clause · politeness · schedule</span></div>
+          <div class="erd-table app"><b>pipeline_runs</b><span>status · reason · heartbeat_at · worker</span></div>
+          <div class="erd-table app"><b>pipeline_run_sources</b><span>the batch · partial unique index lives here</span></div>
+          <div class="erd-table py"><b>fetches</b><span>url · status · etag · content_hash</span></div>
+          <div class="erd-table py"><b>pages</b><span>content-addressed bodies, stored once</span></div>
+        </div>
+
+        <div class="erd-group owned-both">
+          <h5>Provenance</h5>
+          <div class="erd-table both"><b>subjects</b><span>id + type · what a claim points at</span></div>
+          <div class="erd-table both"><b>claims</b><span>field · value · tier · confidence · evidence · layer</span></div>
+          <div class="erd-table app"><b>provider_matches</b><span>method · score · evidence · why two records merged</span></div>
+          <div class="erd-table app"><b>review_items</b><span>reason · candidates · decision</span></div>
+        </div>
+
+        <div class="erd-group">
+          <h5>Published — resolver only</h5>
+          <div class="erd-table app"><b>providers</b><span>the business · slug · description · contact · derived age range</span></div>
+          <div class="erd-table app"><b>locations</b><span>address · geog(Point,4326) · geocode confidence</span></div>
+          <div class="erd-table app"><b>programs</b><span>the class · slug · own description · age · price</span></div>
+          <div class="erd-table app"><b>sessions</b><span>term window · days · times · timezone</span></div>
+          <div class="erd-table app"><b>occurrences</b><span>dated rows, UTC · empty until enrichment</span></div>
+          <div class="erd-table app"><b>cities · categories · synonyms</b><span>taxonomy and the city segment</span></div>
+          <div class="erd-table app"><b>hub_pages · url_redirects</b><span>category landing pages · 301s</span></div>
+        </div>
+      </div>
+      <div class="erd-key">
+        <i class="py">Python writes</i>
+        <i class="app">Laravel writes</i>
+        <i class="both">both insert, nobody updates</i>
+      </div>
+
+      <h3>Three constraints doing what convention cannot</h3>
+      <pre><code>-- 1. append-only: a published value changes only by a new claim arriving
+CREATE TRIGGER claims_no_update BEFORE UPDATE OR DELETE ON claims
+  FOR EACH ROW EXECUTE FUNCTION refuse();
+
+-- 2. the value must appear verbatim in its evidence — two runtimes write here
+CREATE TRIGGER claims_evidence BEFORE INSERT ON claims
+  FOR EACH ROW EXECUTE FUNCTION claims_evidence_check();
+
+-- 3. confidence 1.00 and layer 3 are the same fact: a human decided
+ALTER TABLE claims ADD CONSTRAINT human_confidence
+  CHECK ((confidence = 1.00) = (layer = 3));
+
+-- 4. geocoding is a publish gate, not a cleanup task
+ALTER TABLE locations ADD CONSTRAINT publishable_needs_coords
+  CHECK (NOT is_publishable OR geog IS NOT NULL);
+
+-- 5. one crawler per host, whatever asked for the run
+CREATE UNIQUE INDEX one_active_run_per_source
+    ON pipeline_run_sources (source_id)
+ WHERE status IN ('queued', 'running');</code></pre>
+
+      <h3>Identity — how two records become one business</h3>
+      <p>Overture's "Sunrise Gymnastics", a city catalogue's "Sunrise Gymnastics Inc" and the business's own site must resolve to one listing. The loader matches on external id, then website domain, then name plus geography; below the confidence floor it opens a review item instead of merging.</p>
+      <p><strong>The match is itself evidence.</strong> <code>provider_matches</code> stores the method, the score and the reasoning — the names compared, the distance, the shared domain — so a wrong merge can be audited and unpicked rather than guessed at. Unique on <code>(source_id, external_ref)</code>, which is what makes a reload idempotent.</p>
+
+      <h3>URLs, and where category lives</h3>
+      <div class="tree"><span class="c">HUB PAGES — where category search traffic lands</span>
+/sherman-oaks/gymnastics          <span class="c">lists many businesses and classes</span>
+/sherman-oaks/camps               <span class="c">the same class can appear here too</span>
+
+<span class="c">DETAIL PAGES — one canonical URL each, stable forever</span>
+/sherman-oaks/sunrise-gymnastics
+/sherman-oaks/sunrise-gymnastics/summer-camp</div>
+      <p>A class belongs to several categories, and its categories differ from its business's — a gym's summer camp is a camp. So <strong>category is not in the detail path</strong>. It drives which hubs a listing appears on, and it is carried on the page by breadcrumbs and structured data rather than by the URL.</p>
+      <p>The payoff is concrete: recategorising a business now writes <strong>no redirects at all</strong>. With category in the path it would have rewritten the business URL and every one of its class URLs.</p>
+
+      <h3>Two gates, three page types</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Gate</th><th>Business</th><th>Class</th><th>Hub</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><strong>Publishable</strong><br><span class="hint">users see it, "Unknown" where empty, ranked down, never filtered</span></td>
+              <td>name + publishable location</td>
+              <td>name + parent publishable</td>
+              <td>always</td>
+            </tr>
+            <tr>
+              <td><strong>Indexable</strong><br><span class="hint">search engines see it</span></td>
+              <td>name + coordinates + (phone or website) + description</td>
+              <td>name + age range + description + (days or dates) + <strong>parent indexable</strong></td>
+              <td>≥3 indexable listings + an intro</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>The class gate is deliberately stricter. A class page carrying only a name is the thin, near-identical page that gets directory sites judged poorly — and with dates at 0%, most classes will not clear it at launch. <strong>That is the correct outcome:</strong> they stay visible to users inside the business listing and stay out of the index until they are worth indexing. Structured data follows the same split — <code>LocalBusiness</code> on a business, <code>Course</code> + <code>CourseInstance</code> on a class, and the instance only when dates actually exist.</p>
+
+      <h3>Indexes</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Index</th><th>Table</th><th>Serves</th></tr></thead>
+          <tbody>
+            <tr><td>GiST on <code>geog</code></td><td>locations</td><td>Radius and distance ordering</td></tr>
+            <tr><td>GIN on <code>search_vector</code></td><td>providers, programs</td><td>Text search</td></tr>
+            <tr><td><code>(starts_at, location_id)</code></td><td>occurrences</td><td>"This weekend"</td></tr>
+            <tr><td><code>(subject_id, field)</code></td><td>claims</td><td>The resolver's only read</td></tr>
+            <tr><td><code>(status, created_at)</code></td><td>pipeline_runs</td><td>The poller's claim query</td></tr>
+            <tr><td>partial unique <code>(source_id)</code></td><td>pipeline_run_sources</td><td>One crawler per host</td></tr>
+            <tr><td>unique <code>(source_id, external_ref)</code></td><td>provider_matches</td><td>Idempotent reload</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Each must be proved with committed <code>EXPLAIN ANALYZE</code> output against real data. An index nobody proved is a guess.</p>
+
+      <div class="callout stop">
+        <h4>One thing the client must confirm</h4>
+        <p>The client decided <strong>one listing per business</strong>, with classes described inside it. Class detail pages are the per-programme granularity that decision declined. The schema is unaffected either way — programmes are rows regardless, and indexability is three columns — but whether class pages are <em>published</em> is his call, and it needs asking now rather than surfacing at launch.</p>
+      </div>
+
+      <div class="notes" data-section="database" data-title="Database architecture"></div>
+    </section>
+
     <section id="structure">
-      <h2><span class="num">§6</span>File and code structure</h2>
+      <h2><span class="num">§7</span>File and code structure</h2>
       <p class="lede">Four repositories, split by what fails independently rather than by technical layer. Trees marked <em>today</em> are the real contents; trees marked <em>proposed</em> follow the schema session and are open to argument.</p>
 
       <div class="table-wrap">
@@ -884,7 +1091,7 @@ AGENTS.md          <span class="own">the eight invariants, for humans and agents
 
       <h3>asd-app — proposed layout</h3>
       <div class="tree"><span class="c"># Domain-first, not type-first: files that change together live together.</span>
-<span class="c"># Each domain folder maps to one owner in the write-ownership table (§8).</span>
+<span class="c"># Each domain folder maps to one owner in the write-ownership table (§9).</span>
 app/
 ├── Domain/
 │   ├── Claims/                            <span class="c">the provenance core</span>
@@ -1012,7 +1219,7 @@ scripts/
     </section>
 
     <section id="cms">
-      <h2><span class="num">§7</span>The admin, and why it is not a CRUD panel</h2>
+      <h2><span class="num">§8</span>The admin, and why it is not a CRUD panel</h2>
       <p class="lede">Filament gives us the review queue and listing management with no separate front-end build. What it cannot give us is its default edit behaviour.</p>
 
       <div class="callout stop">
@@ -1067,7 +1274,7 @@ scripts/
     </section>
 
     <section id="security">
-      <h2><span class="num">§8</span>Security posture</h2>
+      <h2><span class="num">§9</span>Security posture</h2>
       <p class="lede">Layered so that any single mistake — a wrong credential, a bad deploy, a bug in the other runtime — is survivable.</p>
 
       <div class="table-wrap">
@@ -1096,7 +1303,7 @@ scripts/
     </section>
 
     <section id="deployment">
-      <h2><span class="num">§9</span>Deployment</h2>
+      <h2><span class="num">§10</span>Deployment</h2>
       <p class="lede">One containerised server, defined in code, in the client's own cloud account. Growth is a resize or a second server, not a rebuild.</p>
 
       <h3>The box</h3>
@@ -1143,7 +1350,7 @@ scripts/
     </section>
 
     <section id="open">
-      <h2><span class="num">§10</span>Open questions</h2>
+      <h2><span class="num">§11</span>Open questions</h2>
       <p class="lede">Genuinely undecided, and listed so a reviewer does not spend time proving something we already know.</p>
 
       <div class="table-wrap">
@@ -1187,6 +1394,7 @@ scripts/
     ["dataflow", "Data flow"],
     ["python-pg", "Python ↔ Postgres"],
     ["laravel-pg", "Laravel ↔ Postgres"],
+    ["database", "Database architecture"],
     ["structure", "File and code structure"],
     ["cms", "Admin and CMS"],
     ["security", "Security"],
