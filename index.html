@@ -500,9 +500,9 @@ button:disabled { opacity: 0.45; cursor: not-allowed; filter: none; }
       <h3>The four questions worth your time</h3>
       <ol>
         <li><strong>Is the database a legitimate integration boundary, or are we avoiding an interface we should have written?</strong> (§3)</li>
-        <li><strong>Does an append-only claims log plus a resolver justify its complexity</strong> against simply writing rows and keeping an audit table? (§4)</li>
+        <li><strong>Does an append-only claims log plus a resolver justify its complexity</strong> against simply writing rows and keeping an audit table? (§5)</li>
         <li><strong>Will Postgres full-text search plus PostGIS hold</strong> for a public directory, or are we deferring a search engine we will regret not having? (§7)</li>
-        <li><strong>Is per-role write ownership worth the friction</strong> it adds to every migration and every local environment? (§9)</li>
+        <li><strong>Is per-role write ownership worth the friction</strong> it adds to every migration and every local environment? (§8)</li>
       </ol>
 
       <div class="callout">
@@ -601,10 +601,135 @@ button:disabled { opacity: 0.45; cursor: not-allowed; filter: none; }
       <div class="notes" data-section="dataflow" data-title="Data flow"></div>
     </section>
 
-    <section id="codeflow">
-      <h2><span class="num">§4</span>Code flow — the write path</h2>
-      <p class="lede">Five hops. Three are Laravel, one is Python, one is a database trigger that neither can talk its way past.</p>
+    <section id="python-pg">
+      <h2><span class="num">§4</span>Python ↔ Postgres</h2>
+      <p class="lede">The ingestion side of the seam. It knows the database and nothing else — no application, no framework, no endpoint to call.</p>
 
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Python does this to Postgres</th><th>Table</th><th>Permission</th></tr></thead>
+          <tbody>
+            <tr><td>Reads which sources are due and how to read them</td><td><code>sources</code></td><td>SELECT</td></tr>
+            <tr><td>Claims a queued run, heartbeats, marks it done</td><td><code>pipeline_runs</code></td><td>SELECT, UPDATE</td></tr>
+            <tr><td>Records every request and every page body</td><td><code>fetches</code>, <code>pages</code></td><td><strong>owns</strong></td></tr>
+            <tr><td>Appends extracted values with their evidence</td><td><code>claims</code></td><td>INSERT only</td></tr>
+            <tr><td>Everything the public site reads</td><td><code>providers</code>, <code>locations</code>…</td><td><strong>none — no grant exists</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>1 · Claim a run</h3>
+      <p class="code-label">proposed · asd_pipeline/runner/poller.py</p>
+      <pre><code>CLAIM = """
+UPDATE pipeline_runs
+   SET status = 'running', started_at = now(), worker = %(worker)s,
+       heartbeat_at = now()
+ WHERE id = (
+       SELECT id FROM pipeline_runs
+        WHERE status = 'queued'
+        ORDER BY created_at              -- FIFO
+          FOR UPDATE SKIP LOCKED
+        LIMIT 1
+   )
+RETURNING id, source_ids;
+"""
+
+async def claim_run(conn, worker: str) -&gt; Run | None:
+    row = await conn.fetchrow(CLAIM, worker=worker)
+    return Run(**row) if row else None      # None: nothing queued, sleep and retry</code></pre>
+      <p>Two workers running this at once take different rows, and neither waits. It is the mechanism Postgres added for exactly this, and it means a second container is a second worker with no other change.</p>
+
+      <h3>2 · Read, politely — this part already exists</h3>
+      <p class="code-label">real · policy/gate.py, fetch/fetcher.py, extract/cascade.py</p>
+      <pre><code>decision = gate.check(url)              # allow / refuse, with a reason
+if not decision.allowed:
+    continue                            # a refusal is terminal for that host
+
+result = await fetcher.fetch(url)       # serial per host, concurrent across hosts
+claims = build_claims(result.html, url) # structured → patterns, in that order</code></pre>
+      <p><strong>Nothing reaches the network without passing <code>gate.check</code></strong> — redirects included, because a redirect is a new host. The gate reads terms verdicts, refusal memory and the daily ceiling from the database rather than from code.</p>
+
+      <h3>3 · The claim refuses to exist without its evidence</h3>
+      <p class="code-label">real · domain/claim.py</p>
+      <pre><code>@dataclass(frozen=True)
+class Claim:
+    field: str
+    value: str
+    tier: Tier
+    evidence: str
+    url: str
+    corroborated: bool = False
+
+    def __post_init__(self) -&gt; None:
+        if self.value not in self.evidence:
+            raise ValueError(
+                f"{self.field}={self.value!r} is not a substring of its evidence "
+                f"{self.evidence!r} — the sentence is the truth, the value is derived "
+                f"from it, and a value the sentence does not contain has no provenance."
+            )</code></pre>
+      <p>A bad claim cannot be constructed, so it cannot be inserted. That is the first of two enforcement points; the second is the trigger, and it exists because this one lives in only one of the two runtimes.</p>
+
+      <h3>4 · Insert, and let the database have the final word</h3>
+      <p class="code-label">proposed · asd_pipeline/runner/writer.py</p>
+      <pre><code>INSERT = """
+INSERT INTO claims (subject_id, field, value, tier, confidence,
+                    evidence, source_url, layer, run_id)
+VALUES (%(subject_id)s, %(field)s, %(value)s, %(tier)s, %(confidence)s,
+        %(evidence)s, %(url)s, %(layer)s, %(run_id)s)
+"""
+
+async def write_claims(conn, run_id: int, claims: list[Claim]) -&gt; int:
+    async with conn.transaction():
+        for c in claims:
+            await conn.execute(INSERT, subject_id=..., field=c.field, value=c.value,
+                               tier=c.tier, confidence=c.confidence,
+                               evidence=c.evidence, url=c.url, layer=2, run_id=run_id)
+    return len(claims)</code></pre>
+
+      <div class="callout warn">
+        <h4>What happens when the trigger fires</h4>
+        <p>If a claim somehow reaches the insert with a value absent from its evidence, Postgres raises and the transaction rolls back. The run is marked <code>failed</code> with the message. <strong>It is not caught and skipped</strong> — a silently dropped claim is how an extractor bug lives for a month.</p>
+      </div>
+
+      <h3>5 · Heartbeat, then finish</h3>
+      <p class="code-label">proposed</p>
+      <pre><code>-- while working, every 30s: distinguishes "slow" from "dead"
+UPDATE pipeline_runs SET heartbeat_at = now() WHERE id = %(id)s;
+
+-- at the end
+UPDATE pipeline_runs
+   SET status = %(status)s,        -- 'done' | 'failed'
+       finished_at = now(), error = %(error)s, claims_written = %(n)s
+ WHERE id = %(id)s;</code></pre>
+      <p>A worker killed mid-crawl leaves its row in <code>running</code> and stops heartbeating. A fixed timeout would either reap healthy long crawls or leave dead ones for hours; the heartbeat tells the two apart.</p>
+
+      <div class="callout">
+        <h4>What Python never does</h4>
+        <p>It does not write a published column, call the application, render a page, or decide what to crawl. It reads a run row, does the work, writes claims. Everything else is somebody else's job — and for the published tables, <strong>the grant does not exist</strong>, so it is not a matter of discipline.</p>
+      </div>
+
+      <div class="notes" data-section="python-pg" data-title="Python ↔ Postgres"></div>
+    </section>
+
+    <section id="laravel-pg">
+      <h2><span class="num">§5</span>Laravel ↔ Postgres</h2>
+      <p class="lede">The application side. It schedules by writing a row, publishes by resolving claims, and serves the public site — and it never speaks to Python either.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Laravel does this to Postgres</th><th>Table</th><th>Permission</th></tr></thead>
+          <tbody>
+            <tr><td>Owns the source registry, edited in the admin</td><td><code>sources</code></td><td><strong>owns</strong></td></tr>
+            <tr><td>Schedules work by inserting a row</td><td><code>pipeline_runs</code></td><td>INSERT, SELECT</td></tr>
+            <tr><td>Appends human decisions from review</td><td><code>claims</code></td><td>INSERT layer 3 only</td></tr>
+            <tr><td>Writes every published value, via the resolver</td><td><code>providers</code>, <code>locations</code>…</td><td><strong>owns</strong></td></tr>
+            <tr><td>Opens and closes review items</td><td><code>review_items</code></td><td><strong>owns</strong></td></tr>
+            <tr><td>What the crawler recorded</td><td><code>fetches</code>, <code>pages</code></td><td>SELECT only</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>1 · Scheduling is one INSERT</h3>
       <p class="code-label">app/Console/Commands/ScheduleIngestionRuns.php</p>
       <pre><code>public function handle(): int
 {
@@ -621,36 +746,10 @@ button:disabled { opacity: 0.45; cursor: not-allowed; filter: none; }
 
     return self::SUCCESS;
 }</code></pre>
+      <p>That is the whole of what "Laravel owns the pipeline" means here. The same insert backs the admin's "re-read this source now" button, which is why that button costs nothing to build.</p>
 
-      <p>That insert is the entire invocation. No subprocess, no client, no serialisation format shared with the other runtime.</p>
-
-      <p class="code-label">asd-pipeline — claiming a run</p>
-      <pre><code>UPDATE pipeline_runs
-   SET status = 'running', started_at = now(), worker = $1
- WHERE id = (
-       SELECT id FROM pipeline_runs
-        WHERE status = 'queued'
-        ORDER BY created_at              -- FIFO
-          FOR UPDATE SKIP LOCKED
-        LIMIT 1
-   )
-RETURNING id, source_ids;</code></pre>
-
-      <p>A composite index on <code>(status, created_at)</code> is not optional here. Without it the claim query scans, and scanning is how a queue becomes the bottleneck.</p>
-
-      <p class="code-label">The evidence invariant, in PL/pgSQL</p>
-      <pre><code>CREATE FUNCTION claims_evidence_check() RETURNS trigger AS $$
-BEGIN
-  IF position(NEW.value in NEW.evidence) = 0 THEN
-    RAISE EXCEPTION 'claim value % is not present in its evidence', NEW.value;
-  END IF;
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;</code></pre>
-
-      <p>Python already drops such claims at construction. The trigger means a <em>bug</em> in Python cannot bypass that: the insert fails, the run fails loudly, and nobody discovers it three weeks later from a parent's complaint.</p>
-
-      <p class="code-label">app/Domain/Claims/Actions/ResolveSubject.php — the only writer of published columns</p>
+      <h3>2 · The resolver — the only writer of published columns</h3>
+      <p class="code-label">app/Domain/Claims/Actions/ResolveSubject.php</p>
       <pre><code>public function __invoke(string $subjectId): void
 {
     $claims = Claim::where('subject_id', $subjectId)
@@ -692,8 +791,8 @@ $$ LANGUAGE plpgsql;</code></pre>
         <p><strong>Read that top to bottom and you have the system.</strong> Every branch that is not a confident, uncontradicted claim ends in a review item rather than a write.</p>
       </div>
 
-      <h3>What a human correction does</h3>
-      <p class="code-label">The admin action — note what it does not do</p>
+      <h3>3 · A human correction appends; it does not update</h3>
+      <p class="code-label">the admin action — note what it does not do</p>
       <pre><code>Action::make('correct')
     -&gt;form([
         TextInput::make('value')-&gt;required(),
@@ -711,16 +810,10 @@ $$ LANGUAGE plpgsql;</code></pre>
 
         ResolveSubject::dispatch($record-&gt;id);
     });</code></pre>
-
       <p>The claim is appended, the resolver re-runs, the published column follows. A crawl arriving tomorrow at layer 2 cannot outrank it.</p>
 
-      <div class="notes" data-section="codeflow" data-title="Code flow — write path"></div>
-    </section>
-
-    <section id="readpath">
-      <h2><span class="num">§5</span>Code flow — the read path</h2>
-      <p class="lede">One query answers the product's central question: what is on near me, for my child's age, this weekend.</p>
-
+      <h3>4 · Serving a search</h3>
+      <p>One query answers the product's central question — what is on near me, for my child's age, this weekend.</p>
       <pre><code>$listings = Provider::query()
     -&gt;select('providers.*')
     -&gt;selectRaw('ST_Distance(l.geog, :origin::geography) AS metres', ['origin' =&gt; $point])
@@ -736,8 +829,6 @@ $$ LANGUAGE plpgsql;</code></pre>
     -&gt;orderBy('metres')
     -&gt;paginate(20);</code></pre>
 
-      <p>Three indexes carry it, and each must be <em>proved</em> with committed <code>EXPLAIN ANALYZE</code> output rather than assumed:</p>
-
       <div class="table-wrap">
         <table>
           <thead><tr><th>Index</th><th>Serves</th><th>Why this shape</th></tr></thead>
@@ -749,9 +840,14 @@ $$ LANGUAGE plpgsql;</code></pre>
         </table>
       </div>
 
-      <p>Listings with missing fields are <strong>ranked down, never filtered out</strong>. Completeness is an <code>ORDER BY</code> term; a parent still sees the listing, with "Unknown" where a value is absent.</p>
+      <p>Each index must be <em>proved</em> with committed <code>EXPLAIN ANALYZE</code> output rather than assumed. Listings with missing fields are <strong>ranked down, never filtered out</strong>: completeness is an <code>ORDER BY</code> term, and a parent still sees the listing with "Unknown" where a value is absent.</p>
 
-      <div class="notes" data-section="readpath" data-title="Read path"></div>
+      <div class="callout">
+        <h4>What Laravel never does</h4>
+        <p>It does not fetch a page, run an extractor, invoke a Python process, or write to <code>fetches</code> and <code>pages</code>. It also never updates a claim — the table rejects it — nor writes a published column from anywhere but the resolver.</p>
+      </div>
+
+      <div class="notes" data-section="laravel-pg" data-title="Laravel ↔ Postgres"></div>
     </section>
 
     <section id="structure">
@@ -1089,8 +1185,8 @@ scripts/
     ["brief", "What we want challenged"],
     ["decisions", "Four decisions"],
     ["dataflow", "Data flow"],
-    ["codeflow", "Code flow — write path"],
-    ["readpath", "Code flow — read path"],
+    ["python-pg", "Python ↔ Postgres"],
+    ["laravel-pg", "Laravel ↔ Postgres"],
     ["structure", "File and code structure"],
     ["cms", "Admin and CMS"],
     ["security", "Security"],
