@@ -1,0 +1,1394 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Claims to Listings — architecture review</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+
+<style>
+:root {
+  --ground:      #F2F4F0;
+  --surface:     #FBFCFA;
+  --surface-2:   #E9ECE6;
+  --line:        #D2D8D1;
+  --line-strong: #B4BEB6;
+  --text:        #14201F;
+  --text-2:      #4A5754;
+  --text-3:      #6C7A76;
+  --accent:      #125C63;
+  --accent-soft: #DCEBEA;
+  --signal:      #A8500E;
+  --signal-soft: #F6E6D6;
+  --danger:      #8C1F35;
+  --danger-soft: #F4DEE2;
+  --code-bg:     #ECEFEA;
+
+  --f-display: "Newsreader", ui-serif, Georgia, serif;
+  --f-body: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  --rail: 15.5rem;
+  --measure: 68ch;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground:      #0C1416;
+    --surface:     #121C1E;
+    --surface-2:   #1A2528;
+    --line:        #263436;
+    --line-strong: #3A4B4E;
+    --text:        #E3EAE7;
+    --text-2:      #A7B6B3;
+    --text-3:      #7E8F8C;
+    --accent:      #5FB8BE;
+    --accent-soft: #10312F;
+    --signal:      #D9903F;
+    --signal-soft: #33210E;
+    --danger:      #E0788C;
+    --danger-soft: #35141C;
+    --code-bg:     #101A1C;
+  }
+}
+
+:root[data-theme="dark"] {
+  --ground:      #0C1416;
+  --surface:     #121C1E;
+  --surface-2:   #1A2528;
+  --line:        #263436;
+  --line-strong: #3A4B4E;
+  --text:        #E3EAE7;
+  --text-2:      #A7B6B3;
+  --text-3:      #7E8F8C;
+  --accent:      #5FB8BE;
+  --accent-soft: #10312F;
+  --signal:      #D9903F;
+  --signal-soft: #33210E;
+  --danger:      #E0788C;
+  --danger-soft: #35141C;
+  --code-bg:     #101A1C;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--text);
+  font-family: var(--f-body);
+  font-size: 16px;
+  line-height: 1.62;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- masthead ---------- */
+
+.masthead {
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+.masthead-inner {
+  max-width: 78rem;
+  margin: 0 auto;
+  padding: 2.6rem 1.5rem 2rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem 2.5rem;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+.eyebrow {
+  font-family: var(--f-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 0.7rem;
+}
+h1 {
+  font-family: var(--f-display);
+  font-weight: 500;
+  font-size: clamp(2rem, 4.4vw, 3.1rem);
+  line-height: 1.08;
+  letter-spacing: -0.015em;
+  margin: 0;
+  text-wrap: balance;
+}
+.standfirst {
+  font-family: var(--f-display);
+  font-size: 1.12rem;
+  color: var(--text-2);
+  max-width: 46ch;
+  margin: 0.9rem 0 0;
+}
+.masthead-meta {
+  display: grid;
+  gap: 0.55rem;
+  font-family: var(--f-mono);
+  font-size: 0.76rem;
+  color: var(--text-3);
+  min-width: 15rem;
+}
+.masthead-meta div { display: flex; gap: 0.9rem; justify-content: space-between; }
+.masthead-meta span:last-child { color: var(--text-2); text-align: right; }
+
+/* ---------- shell ---------- */
+
+.shell {
+  max-width: 78rem;
+  margin: 0 auto;
+  padding: 0 1.5rem 6rem;
+  display: grid;
+  grid-template-columns: var(--rail) minmax(0, 1fr);
+  gap: 3.5rem;
+  align-items: start;
+}
+
+.rail {
+  position: sticky;
+  top: 1.5rem;
+  padding-top: 2.5rem;
+  display: grid;
+  gap: 1.4rem;
+}
+.rail nav { display: grid; gap: 0.1rem; }
+.rail a {
+  display: grid;
+  grid-template-columns: 1.8rem 1fr;
+  gap: 0.3rem;
+  padding: 0.34rem 0.5rem;
+  border-radius: 3px;
+  text-decoration: none;
+  color: var(--text-2);
+  font-size: 0.845rem;
+  line-height: 1.35;
+  border-left: 2px solid transparent;
+}
+.rail a:hover { background: var(--surface-2); color: var(--text); }
+.rail a.current { border-left-color: var(--accent); color: var(--text); background: var(--surface-2); }
+.rail a b { font-family: var(--f-mono); font-weight: 400; font-size: 0.76rem; color: var(--text-3); }
+.rail a.current b { color: var(--accent); }
+.rail a i { font-style: normal; }
+.rail-note {
+  font-size: 0.78rem;
+  color: var(--text-3);
+  border-top: 1px solid var(--line);
+  padding-top: 1rem;
+  line-height: 1.5;
+}
+
+main { padding-top: 2.5rem; min-width: 0; }
+
+/* ---------- sections ---------- */
+
+section { margin: 0 0 4.5rem; scroll-margin-top: 1.5rem; }
+section > * { max-width: var(--measure); }
+section > .wide, section > .flow, section > .notes, section > figure { max-width: none; }
+
+h2 {
+  font-family: var(--f-display);
+  font-weight: 500;
+  font-size: clamp(1.5rem, 2.6vw, 2rem);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  margin: 0 0 0.2rem;
+  text-wrap: balance;
+}
+h2 .num {
+  font-family: var(--f-mono);
+  font-size: 0.8rem;
+  color: var(--accent);
+  display: block;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.5rem;
+}
+h3 {
+  font-family: var(--f-body);
+  font-weight: 600;
+  font-size: 1.02rem;
+  letter-spacing: 0.005em;
+  margin: 2.2rem 0 0.6rem;
+}
+h4 {
+  font-family: var(--f-mono);
+  font-weight: 500;
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin: 1.8rem 0 0.6rem;
+}
+p { margin: 0 0 1rem; }
+a { color: var(--accent); }
+strong { font-weight: 600; }
+ul, ol { margin: 0 0 1rem; padding-left: 1.2rem; }
+li { margin-bottom: 0.42rem; }
+
+.lede { font-size: 1.06rem; color: var(--text-2); }
+
+/* ---------- callouts ---------- */
+
+.callout {
+  border-left: 3px solid var(--accent);
+  background: var(--accent-soft);
+  padding: 0.95rem 1.15rem;
+  margin: 1.4rem 0;
+  border-radius: 0 3px 3px 0;
+}
+.callout p:last-child { margin-bottom: 0; }
+.callout.warn { border-left-color: var(--signal); background: var(--signal-soft); }
+.callout.stop { border-left-color: var(--danger); background: var(--danger-soft); }
+.callout h4 { margin-top: 0; color: inherit; }
+
+/* ---------- code ---------- */
+
+pre {
+  background: var(--code-bg);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 1rem 1.15rem;
+  overflow-x: auto;
+  margin: 1.1rem 0;
+  font-size: 0.82rem;
+  line-height: 1.62;
+}
+pre code { font-family: var(--f-mono); white-space: pre; }
+code {
+  font-family: var(--f-mono);
+  font-size: 0.87em;
+  background: var(--surface-2);
+  padding: 0.1em 0.34em;
+  border-radius: 3px;
+}
+pre code { background: none; padding: 0; }
+.code-label {
+  font-family: var(--f-mono);
+  font-size: 0.72rem;
+  color: var(--text-3);
+  letter-spacing: 0.06em;
+  margin: 1.4rem 0 -0.6rem;
+}
+
+/* ---------- tables ---------- */
+
+.table-wrap { overflow-x: auto; margin: 1.2rem 0; border: 1px solid var(--line); border-radius: 4px; }
+table { border-collapse: collapse; width: 100%; font-size: 0.875rem; background: var(--surface); }
+th, td { text-align: left; padding: 0.62rem 0.85rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+th {
+  font-family: var(--f-mono);
+  font-weight: 500;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-3);
+  background: var(--surface-2);
+  white-space: nowrap;
+}
+tr:last-child td { border-bottom: none; }
+td code { font-size: 0.82em; }
+.num-col { font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+
+/* ---------- swimlane flow ---------- */
+
+.flow {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.55rem;
+  margin: 1.6rem 0 1.2rem;
+  font-size: 0.83rem;
+}
+.lane-head {
+  font-family: var(--f-mono);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-3);
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--line-strong);
+  margin-bottom: 0.3rem;
+}
+.step {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 0.62rem 0.75rem;
+  line-height: 1.42;
+}
+.step b { display: block; font-size: 0.79rem; font-weight: 600; margin-bottom: 0.15rem; }
+.step span { color: var(--text-3); font-size: 0.77rem; }
+.step.pg { border-color: var(--accent); background: var(--accent-soft); }
+.step.gate { border-color: var(--signal); background: var(--signal-soft); }
+.step.hold { border-color: var(--danger); background: var(--danger-soft); }
+.step.ghost { background: none; border-style: dashed; color: var(--text-3); }
+.arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--f-mono);
+  color: var(--accent);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 900px) {
+  .flow { grid-template-columns: 1fr; }
+  .lane-head { margin-top: 1rem; }
+  .arrow { padding: 0.15rem 0; }
+}
+
+/* ---------- tree ---------- */
+
+.tree {
+  font-family: var(--f-mono);
+  font-size: 0.79rem;
+  line-height: 1.72;
+  background: var(--code-bg);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 1rem 1.15rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+.tree .c { color: var(--text-3); }
+.tree .own { color: var(--accent); }
+
+/* ---------- notes ---------- */
+
+.notes {
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--surface);
+  margin-top: 2rem;
+  overflow: hidden;
+}
+.notes-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.7rem 1rem;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--line);
+  font-family: var(--f-mono);
+  font-size: 0.73rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.notes-count { color: var(--accent); }
+.notes-body { padding: 0.9rem 1rem 1rem; display: grid; gap: 0.8rem; }
+.note {
+  border-left: 2px solid var(--line-strong);
+  padding: 0.1rem 0 0.1rem 0.75rem;
+  font-size: 0.9rem;
+}
+.note-meta {
+  font-family: var(--f-mono);
+  font-size: 0.7rem;
+  color: var(--text-3);
+  margin-bottom: 0.2rem;
+  display: flex;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+.note-meta b { color: var(--text-2); font-weight: 500; }
+.note-text { white-space: pre-wrap; }
+.notes-empty { color: var(--text-3); font-size: 0.87rem; font-style: italic; }
+
+textarea, input[type="text"] {
+  width: 100%;
+  font-family: inherit;
+  font-size: 0.9rem;
+  color: var(--text);
+  background: var(--ground);
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
+  padding: 0.55rem 0.7rem;
+  line-height: 1.5;
+}
+textarea { min-height: 4.6rem; resize: vertical; }
+textarea:focus-visible, input:focus-visible, button:focus-visible, .rail a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.note-form { display: grid; gap: 0.55rem; }
+.note-form-row { display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; }
+
+button {
+  font-family: var(--f-body);
+  font-size: 0.83rem;
+  font-weight: 500;
+  padding: 0.45rem 0.9rem;
+  border-radius: 4px;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: var(--surface);
+  cursor: pointer;
+}
+button.ghost { background: none; color: var(--accent); }
+button:hover { filter: brightness(1.08); }
+button:disabled { opacity: 0.45; cursor: not-allowed; filter: none; }
+.hint { font-size: 0.78rem; color: var(--text-3); }
+
+/* ---------- export bar ---------- */
+
+.exportbar {
+  position: sticky;
+  bottom: 0;
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+  padding: 0.7rem 1.5rem;
+  display: flex;
+  gap: 0.7rem;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  font-size: 0.82rem;
+  z-index: 20;
+}
+.exportbar .spacer { margin-right: auto; color: var(--text-3); }
+
+@media (max-width: 860px) {
+  .shell { grid-template-columns: 1fr; gap: 0; }
+  .rail { position: static; padding-top: 1.6rem; }
+  .rail nav { grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr)); display: grid; }
+  main { padding-top: 1.5rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}
+</style>
+
+</head>
+<body>
+<header class="masthead">
+  <div class="masthead-inner">
+    <div>
+      <p class="eyebrow">Architecture review · request for comment</p>
+      <h1>From claims to listings</h1>
+      <p class="standfirst">How AfterschoolDirectoryUSA moves a sentence on a city web page into a listing a parent can trust — and where we think it could be wrong.</p>
+    </div>
+    <div class="masthead-meta">
+      <div><span>Status</span><span>Design approved, unbuilt</span></div>
+      <div><span>Decides</span><span>ADR-0015, ADR-0017</span></div>
+      <div><span>Blocked on</span><span>G-03 schema freeze</span></div>
+      <div><span>Stack</span><span>Laravel 13 · PostgreSQL 16 + PostGIS · Python</span></div>
+    </div>
+  </div>
+</header>
+
+<div class="shell">
+  <aside class="rail">
+    <nav id="rail-nav"></nav>
+    <p class="rail-note">Every section takes notes. They are saved in <strong>this browser only</strong> — nobody else sees them. When you have finished, press Export Markdown at the foot of the page and send the file back.</p>
+  </aside>
+
+  <main>
+
+    <section id="brief">
+      <h2><span class="num">§1</span>What we want challenged</h2>
+      <p class="lede">This is a working architecture, not a finished one. The parts most likely to be wrong are named below — argue with those first.</p>
+
+      <p>AfterschoolDirectoryUSA is a directory of kids' activities, classes, camps and leagues, Los Angeles County first. The data comes from municipal recreation catalogues, provider websites and an open bulk place dataset — sources we do not control and cannot ask to change. Two runtimes read and serve it: a Python ingestion service and a Laravel application.</p>
+
+      <p>The design rests on one promise made to the client and to parents: <strong>every published value carries the sentence it came from</strong>, and a human decision is never overwritten by a crawl. Most of what follows exists to make that true at the storage layer rather than in a code review.</p>
+
+      <h3>The four questions worth your time</h3>
+      <ol>
+        <li><strong>Is the database a legitimate integration boundary, or are we avoiding an interface we should have written?</strong> (§3)</li>
+        <li><strong>Does an append-only claims log plus a resolver justify its complexity</strong> against simply writing rows and keeping an audit table? (§4)</li>
+        <li><strong>Will Postgres full-text search plus PostGIS hold</strong> for a public directory, or are we deferring a search engine we will regret not having? (§7)</li>
+        <li><strong>Is per-role write ownership worth the friction</strong> it adds to every migration and every local environment? (§9)</li>
+      </ol>
+
+      <div class="callout">
+        <h4>How to leave a note</h4>
+        <p>Each section ends with a notes panel. Put your name in once and it is remembered. Your notes stay in this browser and are private to you — when you are done, press <strong>Export Markdown</strong> at the foot of the page and send the file back.</p>
+      </div>
+      <div class="notes" data-section="brief" data-title="What we want challenged"></div>
+    </section>
+
+    <section id="decisions">
+      <h2><span class="num">§2</span>Four decisions everything else follows from</h2>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Decision</th><th>What it means</th><th>Consequence if wrong</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><strong>Python writes to Postgres directly</strong></td>
+              <td>No JSON over stdout, no HTTP endpoint between the runtimes.</td>
+              <td>Two writers to one table. The evidence rule can no longer be enforced in application code.</td>
+            </tr>
+            <tr>
+              <td><strong>The database is the seam</strong></td>
+              <td>Laravel inserts a row to schedule work; Python polls for it. Neither process calls the other.</td>
+              <td>No typed contract between the sides. Schema changes become cross-runtime deployments.</td>
+            </tr>
+            <tr>
+              <td><strong>Review is exceptions-only</strong></td>
+              <td>The resolver publishes on confidence tier. Humans see conflicts, low confidence, ages, geocode failures.</td>
+              <td>A systematic extraction error publishes at scale before anybody looks.</td>
+            </tr>
+            <tr>
+              <td><strong>Published columns are never edited</strong></td>
+              <td>A correction is a new layer-3 claim plus a resolver run — never an <code>UPDATE</code>.</td>
+              <td>Every admin screen needs custom actions; the framework's default edit behaviour is unusable on those fields.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>The three layers, which the whole model turns on</h3>
+      <p>Layer 1 is bulk open place data — the spine. Layer 2 is facts read from recreation catalogues and provider sites. Layer 3 is human truth: review decisions and, later, owner claims. <strong>Precedence is never reversed.</strong> A crawl at layer 2 that disagrees with a layer-3 decision produces a review item, not a write.</p>
+
+      <div class="notes" data-section="decisions" data-title="Four decisions"></div>
+    </section>
+
+    <section id="dataflow">
+      <h2><span class="num">§3</span>Data flow — nothing calls anything</h2>
+      <p class="lede">Read left to right as a swimlane. The middle lane is the only thing the two runtimes share.</p>
+
+      <div class="flow">
+        <div><div class="lane-head">Laravel</div>
+          <div class="step"><b>Scheduler decides</b><span>Green-verdict sources whose next run is due</span></div>
+        </div>
+        <div><div class="lane-head">PostgreSQL — the seam</div>
+          <div class="step pg"><b>INSERT pipeline_runs</b><span>status queued · source ids · reason</span></div>
+        </div>
+        <div><div class="lane-head">Python</div>
+          <div class="step ghost"><b>polling</b><span>waiting for work</span></div>
+        </div>
+
+        <div class="arrow">↓</div><div class="arrow">↓</div><div class="arrow">↓</div>
+
+        <div><div class="step ghost"><b>idle</b><span>no process is invoked</span></div></div>
+        <div><div class="step pg"><b>FOR UPDATE SKIP LOCKED</b><span>one worker wins the row</span></div></div>
+        <div><div class="step"><b>Claims the run</b><span>marks it running, records a heartbeat</span></div></div>
+
+        <div class="arrow">↓</div><div class="arrow">↓</div><div class="arrow">↓</div>
+
+        <div><div class="step ghost"><b>idle</b><span>the crawl can run with the app stopped</span></div></div>
+        <div><div class="step gate"><b>Trigger: evidence check</b><span>value must appear verbatim in its evidence, or the INSERT fails</span></div></div>
+        <div><div class="step"><b>Fetch → extract → INSERT claims</b><span>layers 1–2, each carrying its source sentence</span></div></div>
+
+        <div class="arrow">↓</div><div class="arrow">↓</div><div class="arrow">↓</div>
+
+        <div><div class="step"><b>Resolver runs</b><span>layer precedence, evidence re-verified</span></div></div>
+        <div><div class="step pg"><b>UPDATE pipeline_runs → done</b><span>or failed, with a reason</span></div></div>
+        <div><div class="step ghost"><b>releases the run</b><span>returns to polling</span></div></div>
+
+        <div class="arrow">↓</div><div class="arrow">↓</div><div class="arrow"></div>
+
+        <div><div class="step"><b>Writes published columns</b><span>the only writer of them, ever</span></div></div>
+        <div><div class="step hold"><b>…or opens a review item</b><span>conflict · low confidence · age field · no coordinates</span></div></div>
+        <div></div>
+      </div>
+
+      <h3>Why not an interface between them</h3>
+      <p><strong>Rejected: Laravel invokes Python and parses its output.</strong> It keeps a single writer and enforces the claim contract in one place — genuinely good properties, and the Python code was originally written for it. It also couples the runtimes: a Python traceback becomes a PHP job failure, retry semantics must be reasoned about across both, and the pipeline cannot be run or tested without the application present.</p>
+      <p><strong>Rejected: an HTTP endpoint.</strong> Auth, retries and a web request inside the ingestion path is substantial machinery for a single box — and the reach it buys, Python on its own server, the database seam already provides over the private network.</p>
+
+      <div class="callout warn">
+        <h4>Found in review, not in production</h4>
+        <p><code>SKIP LOCKED</code> stops two workers claiming the same <em>row</em>. It says nothing about two <em>rows</em> existing for one source — which is exactly what a nightly schedule plus an impatient "re-read this source" button produces. Two crawlers on one host breaks the one-request-per-host politeness rule the project is bound by. The fix is a partial unique index, not more locking.</p>
+      </div>
+
+      <div class="notes" data-section="dataflow" data-title="Data flow"></div>
+    </section>
+
+    <section id="codeflow">
+      <h2><span class="num">§4</span>Code flow — the write path</h2>
+      <p class="lede">Five hops. Three are Laravel, one is Python, one is a database trigger that neither can talk its way past.</p>
+
+      <p class="code-label">app/Console/Commands/ScheduleIngestionRuns.php</p>
+      <pre><code>public function handle(): int
+{
+    $due = Source::query()
+        -&gt;where('terms_verdict', 'green')      // only Green sources are ever read
+        -&gt;where('next_run_at', '&lt;=', now())
+        -&gt;pluck('id');
+
+    PipelineRun::create([
+        'source_ids' =&gt; $due-&gt;all(),
+        'status'     =&gt; 'queued',
+        'reason'     =&gt; 'nightly',             // who asked for this crawl
+    ]);
+
+    return self::SUCCESS;
+}</code></pre>
+
+      <p>That insert is the entire invocation. No subprocess, no client, no serialisation format shared with the other runtime.</p>
+
+      <p class="code-label">asd-pipeline — claiming a run</p>
+      <pre><code>UPDATE pipeline_runs
+   SET status = 'running', started_at = now(), worker = $1
+ WHERE id = (
+       SELECT id FROM pipeline_runs
+        WHERE status = 'queued'
+        ORDER BY created_at              -- FIFO
+          FOR UPDATE SKIP LOCKED
+        LIMIT 1
+   )
+RETURNING id, source_ids;</code></pre>
+
+      <p>A composite index on <code>(status, created_at)</code> is not optional here. Without it the claim query scans, and scanning is how a queue becomes the bottleneck.</p>
+
+      <p class="code-label">The evidence invariant, in PL/pgSQL</p>
+      <pre><code>CREATE FUNCTION claims_evidence_check() RETURNS trigger AS $$
+BEGIN
+  IF position(NEW.value in NEW.evidence) = 0 THEN
+    RAISE EXCEPTION 'claim value % is not present in its evidence', NEW.value;
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;</code></pre>
+
+      <p>Python already drops such claims at construction. The trigger means a <em>bug</em> in Python cannot bypass that: the insert fails, the run fails loudly, and nobody discovers it three weeks later from a parent's complaint.</p>
+
+      <p class="code-label">app/Domain/Claims/Actions/ResolveSubject.php — the only writer of published columns</p>
+      <pre><code>public function __invoke(string $subjectId): void
+{
+    $claims = Claim::where('subject_id', $subjectId)
+        -&gt;orderByDesc('layer')        // 3 human &gt; 2 catalogue &gt; 1 spine
+        -&gt;orderByDesc('confidence')
+        -&gt;get()
+        -&gt;groupBy('field');
+
+    $publish = [];
+
+    foreach ($claims as $field =&gt; $candidates) {
+        $winner = $candidates-&gt;first();
+
+        // Age never publishes from inference.
+        if (in_array($field, Claim::NEVER_AUTO_PUBLISH) &amp;&amp; $winner-&gt;layer &lt; 3) {
+            ReviewItem::open($subjectId, $field, $candidates);
+            continue;
+        }
+
+        // A lower layer disagreeing with a human decision is a review item,
+        // never a write. This is the line the architecture exists to hold.
+        if ($this-&gt;contradictsHigherLayer($winner, $candidates)) {
+            ReviewItem::open($subjectId, $field, $candidates);
+            continue;
+        }
+
+        if ($winner-&gt;confidence &lt; Claim::LOW_CONFIDENCE) {
+            ReviewItem::open($subjectId, $field, $candidates);
+            continue;
+        }
+
+        $publish[$field] = $winner-&gt;value;
+    }
+
+    Provider::whereKey($subjectId)-&gt;update($publish);
+}</code></pre>
+
+      <div class="callout">
+        <p><strong>Read that top to bottom and you have the system.</strong> Every branch that is not a confident, uncontradicted claim ends in a review item rather than a write.</p>
+      </div>
+
+      <h3>What a human correction does</h3>
+      <p class="code-label">The admin action — note what it does not do</p>
+      <pre><code>Action::make('correct')
+    -&gt;form([
+        TextInput::make('value')-&gt;required(),
+        Textarea::make('evidence')-&gt;required(),
+    ])
+    -&gt;action(function (array $data, Provider $record) {
+        Claim::create([
+            'subject_id' =&gt; $record-&gt;id,
+            'field'      =&gt; 'age_min',
+            'value'      =&gt; $data['value'],
+            'evidence'   =&gt; $data['evidence'],
+            'layer'      =&gt; 3,
+            'confidence' =&gt; 1.00,        // reserved for humans
+        ]);
+
+        ResolveSubject::dispatch($record-&gt;id);
+    });</code></pre>
+
+      <p>The claim is appended, the resolver re-runs, the published column follows. A crawl arriving tomorrow at layer 2 cannot outrank it.</p>
+
+      <div class="notes" data-section="codeflow" data-title="Code flow — write path"></div>
+    </section>
+
+    <section id="readpath">
+      <h2><span class="num">§5</span>Code flow — the read path</h2>
+      <p class="lede">One query answers the product's central question: what is on near me, for my child's age, this weekend.</p>
+
+      <pre><code>$listings = Provider::query()
+    -&gt;select('providers.*')
+    -&gt;selectRaw('ST_Distance(l.geog, :origin::geography) AS metres', ['origin' =&gt; $point])
+    -&gt;join('locations as l', 'l.provider_id', '=', 'providers.id')
+    -&gt;whereRaw('ST_DWithin(l.geog, :origin::geography, :radius)', [...])      // GiST
+    -&gt;when($q, fn ($qb) =&gt; $qb-&gt;whereRaw(
+        "providers.search_vector @@ websearch_to_tsquery('english', ?)", [$q] // GIN
+    ))
+    -&gt;when($when, fn ($qb) =&gt; $qb-&gt;whereExists(fn ($sub) =&gt;                   // composite
+        $sub-&gt;from('occurrences')-&gt;whereColumn('location_id', 'l.id')
+            -&gt;whereBetween('starts_at', $when)
+    ))
+    -&gt;orderBy('metres')
+    -&gt;paginate(20);</code></pre>
+
+      <p>Three indexes carry it, and each must be <em>proved</em> with committed <code>EXPLAIN ANALYZE</code> output rather than assumed:</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Index</th><th>Serves</th><th>Why this shape</th></tr></thead>
+          <tbody>
+            <tr><td><code>GiST</code> on <code>locations.geog</code></td><td>Radius and distance ordering</td><td>Geography type gives metres without projection arithmetic</td></tr>
+            <tr><td><code>GIN</code> on <code>search_vector</code></td><td>Text search</td><td>Takes representative queries from &gt;200 ms to single-digit ms</td></tr>
+            <tr><td>Composite <code>(starts_at, location_id)</code></td><td>"This weekend"</td><td>Date filtering is a query, not a heuristic — which is why occurrences exist as rows at all</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Listings with missing fields are <strong>ranked down, never filtered out</strong>. Completeness is an <code>ORDER BY</code> term; a parent still sees the listing, with "Unknown" where a value is absent.</p>
+
+      <div class="notes" data-section="readpath" data-title="Read path"></div>
+    </section>
+
+    <section id="structure">
+      <h2><span class="num">§6</span>File and code structure</h2>
+      <p class="lede">Four repositories, split by what fails independently rather than by technical layer. Trees marked <em>today</em> are the real contents; trees marked <em>proposed</em> follow the schema session and are open to argument.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Repository</th><th>Owns</th><th>Runtime</th><th>State today</th></tr></thead>
+          <tbody>
+            <tr><td><code>asd-app</code></td><td>Public site, admin, resolver, scheduling</td><td>Laravel 13 · PHP 8.3</td><td>Bare skeleton, no domain code</td></tr>
+            <tr><td><code>asd-pipeline</code></td><td>Fetching, extraction, claims at layers 1–2</td><td>Python 3.11</td><td>24 modules, 14 test files, green</td></tr>
+            <tr><td><code>asd-infra</code></td><td>Server, containers, backups, restore</td><td>Terraform · Compose</td><td>Written and rehearsed locally; not yet applied</td></tr>
+            <tr><td><code>…-Architecture</code></td><td>Decision records, stack of record, coherence gate</td><td>Markdown + checker</td><td>17 ADRs, 4 still open</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>asd-app — what exists today</h3>
+      <div class="tree"><span class="c"># Laravel 13 skeleton, committed unmodified. This is genuinely all of it.</span>
+app/
+├── Http/Controllers/Controller.php
+├── Models/User.php
+└── Providers/AppServiceProvider.php
+config/            <span class="c">app, auth, cache, database, queue, session…</span>
+routes/
+├── web.php
+└── console.php
+database/
+├── migrations/    <span class="c">3 stock files: users, cache, jobs — never run</span>
+├── seeders/DatabaseSeeder.php
+└── database.sqlite <span class="c">← Laravel&#39;s default. Unused: we run Postgres</span>
+AGENTS.md          <span class="own">the eight invariants, for humans and agents alike</span></div>
+
+      <h3>asd-app — proposed layout</h3>
+      <div class="tree"><span class="c"># Domain-first, not type-first: files that change together live together.</span>
+<span class="c"># Each domain folder maps to one owner in the write-ownership table (§8).</span>
+app/
+├── Domain/
+│   ├── Claims/                            <span class="c">the provenance core</span>
+│   │   ├── Actions/<span class="own">ResolveSubject.php</span>      <span class="c">← only writer of published columns</span>
+│   │   ├── Actions/RecordLayer3Claim.php  <span class="c">what a human decision becomes</span>
+│   │   ├── Models/Claim.php               <span class="c">append-only; no update() path exists</span>
+│   │   └── Data/ClaimData.php             <span class="c">mirrors the Python dataclass, field for field</span>
+│   ├── Catalog/                           <span class="c">what the public site reads</span>
+│   │   ├── Models/{Provider,Location,Program,Session,Occurrence}.php
+│   │   ├── Actions/ExpandOccurrences.php  <span class="c">recurrence → dated rows, stored UTC</span>
+│   │   └── Actions/PruneOccurrences.php   <span class="c">scheduled; past rows expire</span>
+│   ├── Ingestion/                         <span class="c">this side of the seam</span>
+│   │   ├── Models/{Source,PipelineRun,Fetch,Page}.php
+│   │   ├── Actions/QueueRun.php           <span class="c">the entire &quot;invocation&quot;: one INSERT</span>
+│   │   └── Actions/ReapStaleRuns.php      <span class="c">heartbeat, not timeout</span>
+│   ├── Geocoding/
+│   │   ├── CensusGeocoder.php             <span class="c">primary, free, US addresses</span>
+│   │   ├── NominatimGeocoder.php          <span class="c">fallback, 1 req/s, attributed</span>
+│   │   └── PublishGate.php                <span class="c">no coordinates, no publication</span>
+│   ├── Review/
+│   │   ├── Models/ReviewItem.php
+│   │   └── Actions/{AcceptClaim,RejectClaim,CorrectClaim}.php
+│   └── Search/
+│       └── ListingQuery.php               <span class="c">the one query from §5, in one place</span>
+├── Filament/
+│   ├── Resources/ReviewQueueResource.php  <span class="c">claim beside its evidence</span>
+│   ├── Resources/ProviderResource.php     <span class="c">published fields render read-only</span>
+│   └── Resources/SourceResource.php       <span class="c">editable + &quot;re-read now&quot; action</span>
+├── Console/Commands/
+│   ├── ScheduleIngestionRuns.php
+│   └── ResolvePendingSubjects.php
+└── Http/Controllers/                      <span class="c">thin: search, listing, city pages</span>
+
+database/migrations/                       <span class="c">EMPTY until the schema freeze</span>
+tests/
+├── Feature/{Search,Listing,ReviewQueue}Test.php
+└── Unit/Domain/                           <span class="c">mirrors app/Domain/ exactly</span>
+    ├── Claims/ResolveSubjectTest.php      <span class="c">precedence · evidence · conflict-to-review</span>
+    ├── Ingestion/RunLifecycleTest.php     <span class="c">two pollers, one run, one winner</span>
+    └── Catalog/ExpandOccurrencesTest.php  <span class="c">including a DST boundary</span></div>
+
+      <h3>asd-pipeline — what exists today</h3>
+      <div class="tree"><span class="c"># Real, tested, and the half of the system that already works.</span>
+src/asd_pipeline/
+├── policy/                     <span class="own">nothing reaches the network without passing here</span>
+│   ├── gate.py                 <span class="c">allow / refuse + reason. Redirects re-enter it</span>
+│   ├── verdict.py              <span class="c">terms verdict per source</span>
+│   ├── budget.py               <span class="c">daily ceiling — a real ceiling, not a target</span>
+│   ├── reviews.py              <span class="c">terms reviews as data, never hardcoded</span>
+│   └── store.py                <span class="c">refusal memory across runs</span>
+├── fetch/
+│   ├── fetcher.py              <span class="c">serial per host, concurrent across hosts</span>
+│   └── robots.py               <span class="c">fetched and honoured, always</span>
+├── extract/                    <span class="c">structured → patterns → model, in that order</span>
+│   ├── cascade.py              <span class="c">the order itself</span>
+│   ├── structured.py           <span class="c">JSON-LD, microdata, RDFa</span>
+│   ├── patterns.py             <span class="c">text matching</span>
+│   ├── dom.py
+│   └── catalogue.py            <span class="c">a catalogue page as one listing</span>
+├── read/
+│   ├── activenet.py            <span class="c">reads the data endpoint, not the rendered page</span>
+│   └── heuristic.py
+├── normalise/geo.py
+└── domain/
+    ├── <span class="own">claim.py</span>                <span class="c">← the contract asd-app mirrors</span>
+    └── entities.py             <span class="c">provider → location → programme → session → occurrence</span>
+
+tests/                          <span class="c">14 files, mirroring the tree above</span></div>
+
+      <h3>asd-infra — what exists today</h3>
+      <div class="tree">terraform/
+├── droplet.tf        <span class="c">droplet, VPC, reserved IP, project, monitoring alerts</span>
+├── firewall.tf       <span class="own">three inbound rules. The absence of others is the design</span>
+├── spaces.tf         <span class="c">backup bucket + state bucket, versioned, lifecycle</span>
+├── variables.tf      <span class="c">region, size, ssh keys, admin CIDRs</span>
+└── outputs.tf        <span class="c">ip, ssh command, tunnel command</span>
+cloud-init/
+└── bootstrap.yaml    <span class="c">user, ssh policy, ufw, fail2ban, swap, docker, secrets</span>
+compose/
+├── docker-compose.yml <span class="own">five services, each memory-capped</span>
+├── postgres/{initdb.d/01-postgis.sql, postgresql.conf}
+├── caddy/Caddyfile   <span class="c">TLS + basic auth; the only public ports</span>
+├── app/Dockerfile    <span class="c">placeholder until the Laravel image lands</span>
+└── python/Dockerfile
+backup/
+├── backup.sh         <span class="c">dump → age-encrypt → object storage</span>
+├── restore.sh        <span class="c">decrypt → scratch database → verify → drop</span>
+├── verify-backup.sh  <span class="c">freshness and size floor</span>
+└── systemd/          <span class="c">nightly timer + morning check</span>
+scripts/
+├── verify-stack.sh   <span class="c">containers, caps, PostGIS, empty schema</span>
+└── verify-closed.sh  <span class="own">run from a laptop — a scan on the host proves nothing</span></div>
+
+      <h3>Where a change goes</h3>
+      <p>The most useful thing to check in a review: does each kind of change have exactly one home?</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Change</th><th>Where</th><th>Code required?</th></tr></thead>
+          <tbody>
+            <tr><td>Add a city catalogue as a source</td><td>A row in the source registry, via the admin</td><td><strong>None</strong> — adding a source is configuration</td></tr>
+            <tr><td>Support a new catalogue platform</td><td><code>asd-pipeline/read/</code> + a fingerprint</td><td>Python only</td></tr>
+            <tr><td>Extract a new field</td><td><code>extract/patterns.py</code>, then the claim contract on both sides, then the resolver</td><td>Both runtimes — and a schema change</td></tr>
+            <tr><td>New admin screen</td><td><code>asd-app/Filament/Resources/</code></td><td>Laravel only</td></tr>
+            <tr><td>New published column</td><td>Schema session → migration + grant → resolver → read-only display</td><td>Never the admin form</td></tr>
+            <tr><td>Bigger server</td><td>One variable in <code>terraform/</code></td><td>Infra only; a resize, not a rebuild</td></tr>
+            <tr><td>An architectural decision</td><td>An ADR in the architecture repo</td><td>Never a code comment, never a ticket</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Conventions</h3>
+      <ul>
+        <li><strong>Domain folders mirror write ownership.</strong> If a folder needs to write a table another domain owns, the boundary is wrong — that is the smell to look for.</li>
+        <li><strong>Tests mirror the source tree</strong>, one to one. A domain folder without a matching test folder is unfinished.</li>
+        <li><strong>Actions over services.</strong> Single-purpose invokable classes, named for what they do to what. <code>ResolveSubject</code>, not <code>ClaimService</code>.</li>
+        <li><strong>Files stay small</strong> — a few hundred lines. When one grows past that it is usually two responsibilities that have not been separated yet.</li>
+        <li><strong>The claim contract is defined twice, on purpose</strong> — once in Python, once in PHP — and reconciled deliberately. Neither side generates the other, because the seam has no build step between them.</li>
+      </ul>
+
+      <div class="callout warn">
+        <p>The migrations directory holds only Laravel&#39;s three stock files, untouched and never run. A verification script asserts <strong>zero application tables</strong> on the dev server, so a stray <code>artisan migrate</code> is caught rather than assumed.</p>
+      </div>
+
+      <div class="notes" data-section="structure" data-title="File and code structure"></div>
+    </section>
+
+    <section id="cms">
+      <h2><span class="num">§7</span>The admin, and why it is not a CRUD panel</h2>
+      <p class="lede">Filament gives us the review queue and listing management with no separate front-end build. What it cannot give us is its default edit behaviour.</p>
+
+      <div class="callout stop">
+        <h4>The constraint that shapes every screen</h4>
+        <p>A form may never write a published column. When a reviewer corrects an age, the panel <strong>creates a layer-3 claim and re-runs the resolver</strong> — it does not update the row. Stock <code>EditRecord</code> is therefore wrong for exactly the fields reviewers most want to change, and it is disabled on them deliberately.</p>
+      </div>
+
+      <h3>Three surfaces</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Surface</th><th>What it does</th><th>Editable?</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><strong>Review queue</strong></td>
+              <td>Claim beside the verbatim sentence it came from — no second lookup, which is the whole return on storing evidence. Accept, reject, or correct.</td>
+              <td>Only by appending claims</td>
+            </tr>
+            <tr>
+              <td><strong>Listing management</strong></td>
+              <td>Provider, locations, programmes and their dated occurrences. Shows which layer each published value came from and how confident it is.</td>
+              <td>Read-only + claim actions</td>
+            </tr>
+            <tr>
+              <td><strong>Source registry</strong></td>
+              <td>Platform, terms verdict, politeness settings, schedule. Adding a source is configuration, not code. Includes "re-read this source now".</td>
+              <td>Fully editable</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>What the reviewer actually sees</h3>
+      <div class="tree">┌─ Review item ─────────────────────────────────────────────┐
+│  Sunrise Gymnastics · <b>age_min</b>                            │
+│                                                            │
+│  Proposed   <span class="own">5</span>            layer 2 · pattern · 0.60         │
+│  Current    <span class="c">(unset)</span>                                        │
+│                                                            │
+│  Evidence   "Classes are open to children aged 5 to 12,   │
+│              with separate sessions for teens."            │
+│  Source     cityofx.gov/recreation/gymnastics   14 Sep     │
+│                                                            │
+│  [ Accept ]  [ Reject ]  [ Correct… ]                      │
+└────────────────────────────────────────────────────────────┘</div>
+      <p>Accepting writes a new claim at confidence 1.00 and layer 3. Nothing in the interface can reach the column directly.</p>
+
+      <h3>Search, and the decision to defer one</h3>
+      <p>There is no dedicated search index in phase 2. PostgreSQL filters directly at county scale, and a GIN index takes representative queries into single-digit milliseconds. A dedicated engine offers typo tolerance and sub-50 ms responses without tuning — a real advantage we are choosing to defer, on the requirement that adding one later changes a driver and not the call sites.</p>
+      <p><strong>This is question three from §1.</strong> If you think county scale plus faceting will outgrow Postgres sooner than we assume, that is the note to leave.</p>
+
+      <div class="notes" data-section="cms" data-title="Admin and CMS"></div>
+    </section>
+
+    <section id="security">
+      <h2><span class="num">§8</span>Security posture</h2>
+      <p class="lede">Layered so that any single mistake — a wrong credential, a bad deploy, a bug in the other runtime — is survivable.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Layer</th><th>Control</th><th>What it stops</th></tr></thead>
+          <tbody>
+            <tr><td>Network</td><td>Cloud firewall: 80 and 443 public, SSH allow-listed. Nothing else has a rule.</td><td>Database and cache reachable from the internet</td></tr>
+            <tr><td>Host</td><td><code>ufw</code> behind the cloud firewall, key-only SSH, no root login, automatic security updates</td><td>One misconfigured layer being the only layer</td></tr>
+            <tr><td>Containers</td><td>Only the edge publishes ports. Postgres binds to loopback, reached over an SSH tunnel</td><td>A container publishing a port and quietly opening the box</td></tr>
+            <tr><td>Admin</td><td>Not publicly routable; TOTP multi-factor from the first account</td><td>Credential stuffing against an exposed panel</td></tr>
+            <tr><td>Database</td><td><strong>Per-role grants</strong>: the ingestion role has no write on published tables</td><td>A bug in Python corrupting the public site</td></tr>
+            <tr><td>Data</td><td>Append-only + evidence triggers; age fields never auto-publish</td><td>Silent overwriting of a human decision</td></tr>
+            <tr><td>Secrets</td><td>Generated on the server, 0600, never in git or in infrastructure state</td><td>Credentials in a repository that later gets shared</td></tr>
+            <tr><td>Backups</td><td>Encrypted before leaving the machine; the decryption key is never on it</td><td>A compromised box handing over its own history</td></tr>
+            <tr><td>Payments <span class="hint">(phase 3)</span></td><td>Stripe via Cashier, webhook signature verification</td><td>Forged webhook calls granting entitlements</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout">
+        <h4>The grant boundary is the one people will fight</h4>
+        <p>Two database roles mean local environments need both, and every migration must grant as well as create. The QA pass connects as the ingestion role and asserts that <code>UPDATE providers</code> is refused — because the failure mode here is silent: someone debugging with the wrong credentials finds everything works, and the boundary is gone with nothing failing.</p>
+      </div>
+
+      <div class="notes" data-section="security" data-title="Security"></div>
+    </section>
+
+    <section id="deployment">
+      <h2><span class="num">§9</span>Deployment</h2>
+      <p class="lede">One containerised server, defined in code, in the client's own cloud account. Growth is a resize or a second server, not a rebuild.</p>
+
+      <h3>The box</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Container</th><th>Image</th><th class="num-col">Memory cap</th><th>Reachable from</th></tr></thead>
+          <tbody>
+            <tr><td>postgres</td><td>postgis/postgis:16-3.4</td><td class="num-col">1280 MB</td><td>Internal; loopback for tunnelled psql</td></tr>
+            <tr><td>app</td><td>Laravel (PHP 8.3)</td><td class="num-col">1024 MB</td><td>Internal only</td></tr>
+            <tr><td>python</td><td>asd-pipeline</td><td class="num-col">640 MB</td><td>Internal only; polls, serves nothing</td></tr>
+            <tr><td>redis</td><td>redis:7-alpine</td><td class="num-col">192 MB</td><td>Internal only</td></tr>
+            <tr><td>caddy</td><td>caddy:2-alpine</td><td class="num-col">128 MB</td><td><strong>80 and 443 — the only public ports</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>The caps are the promise that a crawl cannot starve the public site, expressed in the compose file rather than in prose. 3.2 GB capped of 4 GB, leaving the host its headroom.</p>
+
+      <h3>Cost, and how it grows</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Stage</th><th class="num-col">Server</th><th class="num-col">Backups</th><th class="num-col">Total</th><th>Change required</th></tr></thead>
+          <tbody>
+            <tr><td>Build milestones</td><td class="num-col">$24</td><td class="num-col">$5</td><td class="num-col">$29</td><td>—</td></tr>
+            <tr><td>Ingestion begins</td><td class="num-col">$48</td><td class="num-col">$5</td><td class="num-col">$53</td><td>One variable, one apply</td></tr>
+            <tr><td>Public launch</td><td class="num-col">$72</td><td class="num-col">$5</td><td class="num-col">$77</td><td>A second server in the same network</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Backups, and the part people skip</h3>
+      <ul>
+        <li><strong>Nightly</strong> logical dump, encrypted <em>on</em> the machine before it leaves, shipped to object storage. Fourteen nightly, eight weekly.</li>
+        <li><strong>The decryption key is never on the server.</strong> A restore requires an operator to bring it and remove it afterwards, so a compromised box cannot read its own history.</li>
+        <li><strong>A restore has been performed</strong>, not merely scheduled: decrypt, restore into a scratch database, run a spatial query against the restored data, drop it. Timings recorded.</li>
+        <li><strong>A size floor</strong> catches the dump that "succeeds" and writes almost nothing — the failure mode that quietly eats everyone.</li>
+      </ul>
+
+      <div class="callout warn">
+        <h4>Known gap, stated rather than hidden</h4>
+        <p>Nothing pages anyone when the nightly freshness check fails. Wiring alerting now would mean a vendor account outside the client's name, so it lands with the CI work: a scheduled job runs the same check daily and fails the build, which emails. Until then the runbook carries a weekly manual check.</p>
+      </div>
+
+      <div class="notes" data-section="deployment" data-title="Deployment"></div>
+    </section>
+
+    <section id="open">
+      <h2><span class="num">§10</span>Open questions</h2>
+      <p class="lede">Genuinely undecided, and listed so a reviewer does not spend time proving something we already know.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Question</th><th>State</th></tr></thead>
+          <tbody>
+            <tr><td><strong>The schema itself</strong> — tables, columns, keys, the ERD</td><td>Deliberately not designed yet. A dedicated session precedes it; everything here describes ownership and flow, not columns</td></tr>
+            <tr><td><strong>Duplicate-run prevention</strong> — partial unique index on active runs per source</td><td>Identified in review; a requirement for the schema session</td></tr>
+            <tr><td><strong>Stale-run detection</strong> — heartbeat column rather than a fixed timeout</td><td>Same; cheap now, painful to retrofit</td></tr>
+            <tr><td><strong>How JS-only pages get read</strong> in production</td><td>Open. Measuring the residual need before deciding</td></tr>
+            <tr><td><strong>Terms posture on ambiguous sources</strong></td><td>Open with the client; currently only unambiguous permission proceeds</td></tr>
+            <tr><td><strong>Poller shape</strong> — long-running container versus timer-invoked process</td><td>Either satisfies the design. The container is simpler to reason about on one box</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout">
+        <h4>Where to be most sceptical</h4>
+        <p>If the architecture is wrong, we think it is wrong at the seam: two runtimes writing one database with no typed contract between them, relying on grants and triggers to hold a boundary that an interface would hold structurally. Everything else is recoverable. That is not.</p>
+      </div>
+
+      <div class="notes" data-section="open" data-title="Open questions"></div>
+    </section>
+
+  </main>
+</div>
+
+<div class="exportbar">
+  <span class="spacer" id="export-status">Your notes stay in this browser. Export when you are done.</span>
+  <button class="ghost" id="btn-copy">Copy all notes</button>
+  <button id="btn-download">Export Markdown</button>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var SECTIONS = [
+    ["brief", "What we want challenged"],
+    ["decisions", "Four decisions"],
+    ["dataflow", "Data flow"],
+    ["codeflow", "Code flow — write path"],
+    ["readpath", "Code flow — read path"],
+    ["structure", "File and code structure"],
+    ["cms", "Admin and CMS"],
+    ["security", "Security"],
+    ["deployment", "Deployment"],
+    ["open", "Open questions"]
+  ];
+
+  /* ---------- section rail ---------- */
+
+  var nav = document.getElementById("rail-nav");
+  SECTIONS.forEach(function (s, i) {
+    var a = document.createElement("a");
+    a.href = "#" + s[0];
+    a.dataset.target = s[0];
+    var b = document.createElement("b");
+    b.textContent = "§" + (i + 1);
+    var t = document.createElement("i");
+    t.textContent = s[1];
+    a.appendChild(b);
+    a.appendChild(t);
+    nav.appendChild(a);
+  });
+
+  var links = Array.prototype.slice.call(nav.querySelectorAll("a"));
+  if ("IntersectionObserver" in window) {
+    var obs = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        links.forEach(function (l) {
+          l.classList.toggle("current", l.dataset.target === e.target.id);
+        });
+      });
+    }, { rootMargin: "-10% 0px -75% 0px" });
+    SECTIONS.forEach(function (s) {
+      var el = document.getElementById(s[0]);
+      if (el) obs.observe(el);
+    });
+  }
+
+  /* ---------- notes ---------- */
+
+  var NAME_KEY = "asd-review-name";
+  var panels = {};
+  var notesBySection = {};
+  var db = null;
+
+  function authorName() {
+    try { return localStorage.getItem(NAME_KEY) || ""; } catch (e) { return ""; }
+  }
+  function setAuthorName(v) {
+    try { localStorage.setItem(NAME_KEY, v); } catch (e) { /* private mode */ }
+  }
+
+  function fmtTime(iso) {
+    if (!iso) return "";
+    var d = new Date(iso);
+    if (isNaN(d)) return "";
+    return d.toLocaleString(undefined, {
+      month: "short", day: "numeric", hour: "2-digit", minute: "2-digit"
+    });
+  }
+
+  function buildPanel(el) {
+    var section = el.dataset.section;
+
+    var head = document.createElement("div");
+    head.className = "notes-head";
+    var label = document.createElement("span");
+    label.textContent = "Reviewer notes";
+    var count = document.createElement("span");
+    count.className = "notes-count";
+    count.textContent = "0";
+    head.appendChild(label);
+    head.appendChild(count);
+
+    var body = document.createElement("div");
+    body.className = "notes-body";
+
+    var list = document.createElement("div");
+    list.style.display = "grid";
+    list.style.gap = "0.8rem";
+
+    var form = document.createElement("form");
+    form.className = "note-form";
+
+    var ta = document.createElement("textarea");
+    ta.placeholder = "What is wrong with this section, or what would you do differently?";
+    ta.setAttribute("aria-label", "Your note on this section");
+
+    var row = document.createElement("div");
+    row.className = "note-form-row";
+
+    var name = document.createElement("input");
+    name.type = "text";
+    name.placeholder = "Your name";
+    name.style.maxWidth = "12rem";
+    name.value = authorName();
+    name.setAttribute("aria-label", "Your name");
+
+    var btn = document.createElement("button");
+    btn.type = "submit";
+    btn.textContent = "Post note";
+
+    var hint = document.createElement("span");
+    hint.className = "hint";
+
+    row.appendChild(name);
+    row.appendChild(btn);
+    row.appendChild(hint);
+    form.appendChild(ta);
+    form.appendChild(row);
+
+    body.appendChild(list);
+    body.appendChild(form);
+    el.appendChild(head);
+    el.appendChild(body);
+
+    form.addEventListener("submit", function (ev) {
+      ev.preventDefault();
+      var text = ta.value.trim();
+      var who = name.value.trim() || "Anonymous";
+      if (!text) return;
+      if (!db) { hint.textContent = "Notes are unavailable in this view."; return; }
+      setAuthorName(who);
+      btn.disabled = true;
+      hint.textContent = "Saving…";
+      db.collection("notes").add({
+        section: section,
+        author: who,
+        text: text,
+        at: new Date().toISOString()
+      }).then(function () {
+        ta.value = "";
+        hint.textContent = "Posted.";
+        setTimeout(function () { hint.textContent = ""; }, 2500);
+      }).catch(function (err) {
+        hint.textContent = "Could not save: " + (err && err.code ? err.code : "error");
+      }).then(function () {
+        btn.disabled = false;
+      });
+    });
+
+    panels[section] = { list: list, count: count, hint: hint, form: form, button: btn };
+    renderNotes(section);
+  }
+
+  function renderNotes(section) {
+    var p = panels[section];
+    if (!p) return;
+    var items = notesBySection[section] || [];
+    p.list.textContent = "";
+    p.count.textContent = String(items.length);
+
+    if (!items.length) {
+      var empty = document.createElement("p");
+      empty.className = "notes-empty";
+      empty.textContent = db
+        ? "No notes on this section yet."
+        : "Notes could not load — your browser may be blocking local storage.";
+      p.list.appendChild(empty);
+      return;
+    }
+
+    items.forEach(function (n) {
+      var wrap = document.createElement("div");
+      wrap.className = "note";
+      var meta = document.createElement("div");
+      meta.className = "note-meta";
+      var who = document.createElement("b");
+      who.textContent = n.author || "Anonymous";
+      var when = document.createElement("span");
+      when.textContent = fmtTime(n.at);
+      meta.appendChild(who);
+      meta.appendChild(when);
+      var txt = document.createElement("div");
+      txt.className = "note-text";
+      txt.textContent = n.text || "";
+      wrap.appendChild(meta);
+      wrap.appendChild(txt);
+      p.list.appendChild(wrap);
+    });
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll(".notes"), buildPanel);
+
+  /* ---------- export ---------- */
+
+  function markdown() {
+    var lines = [];
+    lines.push("# Architecture review notes — From claims to listings");
+    lines.push("");
+    lines.push("Exported " + new Date().toISOString());
+    lines.push("");
+    var total = 0;
+    SECTIONS.forEach(function (s, i) {
+      var items = notesBySection[s[0]] || [];
+      if (!items.length) return;
+      total += items.length;
+      lines.push("## §" + (i + 1) + " " + s[1]);
+      lines.push("");
+      items.forEach(function (n) {
+        lines.push("- **" + (n.author || "Anonymous") + "** (" + (n.at || "") + ")");
+        String(n.text || "").split("\n").forEach(function (l) {
+          lines.push("  " + l);
+        });
+        lines.push("");
+      });
+    });
+    if (!total) {
+      lines.push("_No notes recorded yet._");
+      lines.push("");
+    }
+    return lines.join("\n");
+  }
+
+  var status = document.getElementById("export-status");
+
+  document.getElementById("btn-copy").addEventListener("click", function () {
+    var md = markdown();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(md).then(function () {
+        status.textContent = "All notes copied as Markdown.";
+      }).catch(function () {
+        status.textContent = "Copy blocked by the browser — use Export Markdown.";
+      });
+    } else {
+      status.textContent = "Clipboard unavailable — use Export Markdown.";
+    }
+  });
+
+  var dlBtn = document.getElementById("btn-download");
+  dlBtn.addEventListener("click", function () {
+    var blob = new Blob([markdown()], { type: "text/markdown;charset=utf-8" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = "architecture-review-notes.md";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+    status.textContent = "Exported \u2014 send the file back.";
+  });
+
+  /* ---------- local store: notes stay in this browser ---------- */
+
+  var LS_NOTES = "asd-review-notes-v1";
+  var handler = null;
+
+  function readAll() {
+    try { return JSON.parse(localStorage.getItem(LS_NOTES) || "[]"); }
+    catch (e) { return []; }
+  }
+  function writeAll(list) {
+    try { localStorage.setItem(LS_NOTES, JSON.stringify(list)); return true; }
+    catch (e) { return false; }
+  }
+  function emit() {
+    if (!handler) return;
+    var list = readAll().slice().sort(function (a, b) {
+      return String(a.at || "").localeCompare(String(b.at || ""));
+    });
+    handler({ docs: list.map(function (n) { return { data: function () { return n; } }; }) });
+  }
+
+  db = {
+    collection: function () {
+      return {
+        add: function (doc) {
+          var list = readAll();
+          list.push(doc);
+          if (!writeAll(list)) return Promise.reject({ code: "storage_full" });
+          emit();
+          return Promise.resolve();
+        },
+        orderBy: function () { return this; },
+        onSnapshot: function (next) { handler = next; emit(); return function () { handler = null; }; }
+      };
+    }
+  };
+
+  db.collection("notes").onSnapshot(function (snap) {
+    notesBySection = {};
+    snap.docs.forEach(function (doc) {
+      var n = doc.data() || {};
+      var key = typeof n.section === "string" ? n.section : "";
+      if (!panels[key]) return;
+      (notesBySection[key] = notesBySection[key] || []).push({
+        author: typeof n.author === "string" ? n.author.slice(0, 80) : "",
+        text: typeof n.text === "string" ? n.text.slice(0, 4000) : "",
+        at: typeof n.at === "string" ? n.at : ""
+      });
+    });
+    Object.keys(panels).forEach(renderNotes);
+  });
+
+})();
+</script>
+
+</body>
+</html>
