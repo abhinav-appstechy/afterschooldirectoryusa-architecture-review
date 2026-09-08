@@ -1,0 +1,506 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>What Python Does — AfterschoolDirectoryUSA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+
+<style>
+:root {
+  --ground:      #F2F4F0;
+  --surface:     #FBFCFA;
+  --surface-2:   #E9ECE6;
+  --line:        #D2D8D1;
+  --line-strong: #B4BEB6;
+  --text:        #14201F;
+  --text-2:      #4A5754;
+  --text-3:      #6C7A76;
+  --accent:      #125C63;
+  --accent-soft: #DCEBEA;
+  --signal:      #A8500E;
+  --signal-soft: #F6E6D6;
+  --danger:      #8C1F35;
+  --danger-soft: #F4DEE2;
+  --code-bg:     #ECEFEA;
+
+  --f-display: "Newsreader", ui-serif, Georgia, serif;
+  --f-body: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground:      #0C1416;
+    --surface:     #121C1E;
+    --surface-2:   #1A2528;
+    --line:        #263436;
+    --line-strong: #3A4B4E;
+    --text:        #E3EAE7;
+    --text-2:      #A7B6B3;
+    --text-3:      #7E8F8C;
+    --accent:      #5FB8BE;
+    --accent-soft: #10312F;
+    --signal:      #D9903F;
+    --signal-soft: #33210E;
+    --danger:      #E0788C;
+    --danger-soft: #35141C;
+    --code-bg:     #101A1C;
+  }
+}
+
+:root[data-theme="dark"] {
+  --ground:      #0C1416;
+  --surface:     #121C1E;
+  --surface-2:   #1A2528;
+  --line:        #263436;
+  --line-strong: #3A4B4E;
+  --text:        #E3EAE7;
+  --text-2:      #A7B6B3;
+  --text-3:      #7E8F8C;
+  --accent:      #5FB8BE;
+  --accent-soft: #10312F;
+  --signal:      #D9903F;
+  --signal-soft: #33210E;
+  --danger:      #E0788C;
+  --danger-soft: #35141C;
+  --code-bg:     #101A1C;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--text);
+  font-family: var(--f-body);
+  font-size: 15.5px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+.masthead {
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+.masthead-inner {
+  max-width: 82rem;
+  margin: 0 auto;
+  padding: 2.4rem 1.5rem 1.9rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.4rem 3rem;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+.eyebrow {
+  font-family: var(--f-mono);
+  font-size: 0.71rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 0.65rem;
+}
+h1 {
+  font-family: var(--f-display);
+  font-weight: 500;
+  font-size: clamp(1.9rem, 4vw, 2.8rem);
+  line-height: 1.08;
+  letter-spacing: -0.015em;
+  margin: 0;
+  text-wrap: balance;
+}
+.standfirst {
+  font-family: var(--f-display);
+  font-size: 1.08rem;
+  color: var(--text-2);
+  max-width: 48ch;
+  margin: 0.8rem 0 0;
+}
+.masthead-meta {
+  display: grid;
+  gap: 0.5rem;
+  font-family: var(--f-mono);
+  font-size: 0.75rem;
+  color: var(--text-3);
+  min-width: 14rem;
+}
+.masthead-meta div { display: flex; gap: 1rem; justify-content: space-between; }
+.masthead-meta span:last-child { color: var(--text-2); text-align: right; }
+
+.shell {
+  max-width: 82rem;
+  margin: 0 auto;
+  padding: 0 1.5rem 5rem;
+  display: grid;
+  grid-template-columns: 14rem minmax(0, 1fr);
+  gap: 3rem;
+  align-items: start;
+}
+
+.rail { position: sticky; top: 1.5rem; padding-top: 2.2rem; display: grid; gap: 1.2rem; }
+.rail h4 {
+  font-family: var(--f-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin: 0.7rem 0 0.3rem;
+}
+.rail a {
+  display: block;
+  padding: 0.22rem 0.5rem;
+  border-radius: 3px;
+  text-decoration: none;
+  color: var(--text-2);
+  font-family: var(--f-mono);
+  font-size: 0.78rem;
+  border-left: 2px solid transparent;
+}
+.rail a:hover { background: var(--surface-2); color: var(--text); }
+.rail a.current { border-left-color: var(--accent); background: var(--surface-2); color: var(--text); }
+
+main { padding-top: 2.2rem; min-width: 0; }
+
+h2 {
+  font-family: var(--f-display);
+  font-weight: 500;
+  font-size: 1.65rem;
+  letter-spacing: -0.01em;
+  margin: 3rem 0 0.3rem;
+  padding-top: 1.2rem;
+  border-top: 2px solid var(--line-strong);
+  scroll-margin-top: 1rem;
+}
+h2:first-of-type { margin-top: 0; border-top: none; padding-top: 0; }
+.group-note { color: var(--text-2); margin: 0 0 1.6rem; max-width: 70ch; }
+p { margin: 0 0 1rem; max-width: 74ch; }
+a { color: var(--accent); }
+code {
+  font-family: var(--f-mono);
+  font-size: 0.87em;
+  background: var(--surface-2);
+  padding: 0.08em 0.32em;
+  border-radius: 3px;
+}
+
+/* ---------- schema map ---------- */
+
+.map-wrap {
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--surface);
+  overflow-x: auto;
+  margin: 0 0 0.7rem;
+  padding: 0.5rem;
+}
+.map { display: block; width: 100%; min-width: 900px; height: auto; }
+.map .zone { fill: var(--ground); stroke: var(--line); stroke-dasharray: 3 3; }
+.map .zone-label {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  fill: var(--text-3);
+}
+.map .box { fill: var(--surface); stroke: var(--line-strong); stroke-width: 1; }
+.map .box.py  { stroke: var(--signal); stroke-width: 1.5; }
+.map .box.app { stroke: var(--accent); stroke-width: 1.5; }
+.map .box.both{ stroke: var(--danger); stroke-width: 1.5; }
+.map .tname { font-family: var(--f-mono); font-size: 12.5px; font-weight: 500; fill: var(--text); }
+.map .tnote { font-family: var(--f-body); font-size: 10.5px; fill: var(--text-3); }
+.map .link { fill: none; stroke: var(--line-strong); stroke-width: 1.4; }
+.map .link.key { stroke: var(--accent); stroke-width: 2; }
+.map .dot { fill: var(--line-strong); }
+.map .dot.key { fill: var(--accent); }
+.map-note { font-size: 0.8rem; color: var(--text-3); margin: 0 0 2rem; max-width: 74ch; }
+
+/* ---------- table cards ---------- */
+
+.tbl {
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--surface);
+  margin: 0 0 1.6rem;
+  overflow: hidden;
+  scroll-margin-top: 1rem;
+}
+.tbl-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.6rem 1rem;
+  padding: 0.6rem 0.9rem;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--line);
+}
+.tbl-head b {
+  font-family: var(--f-mono);
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+.tbl-head .desc { color: var(--text-2); font-size: 0.86rem; flex: 1 1 16rem; }
+.owner {
+  font-family: var(--f-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.12rem 0.45rem;
+  border-radius: 3px;
+  white-space: nowrap;
+  border: 1px solid;
+}
+.owner.py  { color: var(--signal); border-color: var(--signal); background: var(--signal-soft); }
+.owner.app { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
+.owner.both{ color: var(--danger); border-color: var(--danger); background: var(--danger-soft); }
+
+.cols { width: 100%; border-collapse: collapse; font-size: 0.83rem; }
+.cols th {
+  font-family: var(--f-mono);
+  font-weight: 500;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-3);
+  text-align: left;
+  padding: 0.42rem 0.9rem;
+  border-bottom: 1px solid var(--line);
+}
+.cols td {
+  padding: 0.36rem 0.9rem;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+.cols tr:last-child td { border-bottom: none; }
+.cols td:first-child { font-family: var(--f-mono); font-size: 0.79rem; white-space: nowrap; }
+.cols td:nth-child(2) { font-family: var(--f-mono); font-size: 0.76rem; color: var(--text-2); white-space: nowrap; }
+.cols td:nth-child(3) { color: var(--text-2); }
+.cols .pk td:first-child::after { content: " PK"; color: var(--accent); font-size: 0.7rem; }
+.cols .fk td:first-child::after { content: " FK"; color: var(--signal); font-size: 0.7rem; }
+.cols .uq td:first-child::after { content: " UQ"; color: var(--text-3); font-size: 0.7rem; }
+.table-scroll { overflow-x: auto; }
+
+.tbl-foot {
+  padding: 0.5rem 0.9rem;
+  border-top: 1px solid var(--line);
+  background: var(--ground);
+  font-size: 0.79rem;
+  color: var(--text-2);
+  display: grid;
+  gap: 0.25rem;
+}
+.tbl-foot b {
+  font-family: var(--f-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  font-weight: 500;
+}
+.tbl-foot code { background: none; padding: 0; color: var(--text-2); }
+
+pre {
+  background: var(--code-bg);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 0.9rem 1.1rem;
+  overflow-x: auto;
+  margin: 1rem 0 1.6rem;
+  font-size: 0.79rem;
+  line-height: 1.6;
+}
+pre code { font-family: var(--f-mono); background: none; padding: 0; white-space: pre; }
+
+.callout {
+  border-left: 3px solid var(--accent);
+  background: var(--accent-soft);
+  padding: 0.85rem 1.1rem;
+  margin: 1.2rem 0 1.8rem;
+  border-radius: 0 3px 3px 0;
+  max-width: 74ch;
+}
+.callout.warn { border-left-color: var(--signal); background: var(--signal-soft); }
+.callout p:last-child { margin-bottom: 0; }
+.callout b { font-family: var(--f-mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; display: block; margin-bottom: 0.3rem; }
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.4rem;
+  font-size: 0.78rem;
+  color: var(--text-3);
+  margin: 0 0 2rem;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--surface);
+}
+
+.rel { width: 100%; border-collapse: collapse; font-size: 0.83rem; background: var(--surface); }
+.rel th {
+  font-family: var(--f-mono); font-weight: 500; font-size: 0.68rem;
+  text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-3);
+  text-align: left; padding: 0.45rem 0.85rem; background: var(--surface-2);
+  border-bottom: 1px solid var(--line); white-space: nowrap;
+}
+.rel td { padding: 0.4rem 0.85rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+.rel td:first-child, .rel td:nth-child(2) { font-family: var(--f-mono); font-size: 0.78rem; white-space: nowrap; }
+.rel tr:last-child td { border-bottom: none; }
+.rel-wrap { border: 1px solid var(--line); border-radius: 5px; overflow: hidden; overflow-x: auto; margin-bottom: 1.6rem; }
+.card { font-family: var(--f-mono); font-size: 0.73rem; color: var(--text-3); }
+
+@media (max-width: 900px) {
+  .shell { grid-template-columns: 1fr; gap: 0; }
+  .rail { position: static; padding-top: 1.4rem; }
+  .rail nav { display: grid; grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr)); }
+  main { padding-top: 1.4rem; }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style></head>
+<body>
+<header class="masthead">
+  <div class="masthead-inner">
+    <div>
+      <p class="eyebrow">AfterschoolDirectoryUSA · ingestion design</p>
+      <h1>What Python does</h1>
+      <p class="standfirst">Seven jobs, nine tables, and one rule: Python proposes, Laravel decides.</p>
+    </div>
+    <div class="masthead-meta">
+      <div><span>Status</span><span>Draft for team review</span></div>
+      <div><span>Runtime</span><span>Python 3.11 · Postgres 16</span></div>
+      <div><span>Writes</span><span>Its own tables only</span></div>
+      <div><span>Reads</span><span>The run queue Laravel fills</span></div>
+    </div>
+  </div>
+</header>
+
+<div class="shell">
+  <aside class="rail"><nav id="rail-nav"></nav></aside>
+  <main>
+
+    <p style="margin-bottom:1.6rem">The schema reference is at
+      <a href="schema.html"><strong>the Tables of Record</strong></a>; the reasoning behind the
+      whole system is in <a href="index.html"><strong>the architecture review</strong></a>.
+      This page covers the ingestion half only.</p>
+
+    <h2 id="roles">The seven jobs</h2>
+    <p class="group-note">Python does five of these today. Five are new.</p>
+    <div class="rel-wrap"><table class="rel">
+      <thead><tr><th>#</th><th>Job</th><th>What it means</th><th>Today?</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td><strong>Discover</strong></td><td>Find new sources with Firecrawl, inside a credit budget, every call recorded</td><td>New</td></tr>
+        <tr><td>2</td><td><strong>Judge terms</strong></td><td>Read robots and the terms pages, propose a verdict <strong>with the quoted clause</strong></td><td>Partly — done by hand in M1</td></tr>
+        <tr><td>3</td><td><strong>Map</strong></td><td>Read a site's sitemap, pick the pages worth fetching</td><td>New</td></tr>
+        <tr><td>4</td><td><strong>Fetch</strong></td><td>Politely: one request per host, 2s apart, robots honoured, honest user agent</td><td>Yes</td></tr>
+        <tr><td>5</td><td><strong>Read</strong></td><td>A site's data endpoint (JSON) or its HTML pages</td><td>Yes</td></tr>
+        <tr><td>6</td><td><strong>Flag health</strong></td><td>Working · not working · <strong>was working, now broken</strong></td><td>New</td></tr>
+        <tr><td>7</td><td><strong>Propose</strong></td><td>Whole classes into its own tables, with a publish-readiness opinion</td><td>New</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2 id="boundary">The boundary</h2>
+    <div class="rel-wrap"><table class="rel">
+      <thead><tr><th></th><th>Python</th><th>Laravel</th></tr></thead>
+      <tbody>
+        <tr><td>Scraped tables</td><td><strong>Writes</strong></td><td>Reads</td></tr>
+        <tr><td>Live site tables</td><td><strong>No access at all</strong></td><td>Writes</td></tr>
+        <tr><td>The run queue</td><td>Claims and updates</td><td><strong>Fills</strong></td></tr>
+        <tr><td>Judgement</td><td>Proposes</td><td><strong>Decides</strong></td></tr>
+      </tbody>
+    </table></div>
+    <div class="callout">
+      <b>Enforced, not agreed</b>
+      <p>Two database roles. Python's role has <strong>no write permission on the live tables</strong> — so a bug in the scraper cannot reach the public site. It is a permission error, not a code review.</p>
+    </div>
+
+    <h2 id="flow">How a run works</h2>
+    <div class="tree">Laravel  ──INSERT runs(queued, source_ids, reason)
+            │
+Python   ──claims the row  ──►  running
+         ──gate.check     <span class="c">nothing reaches the network without this</span>
+         ──fetch          <span class="c">1 req/host, 2s apart, robots honoured</span>
+         ──read           <span class="c">data endpoint (JSON) or HTML pages</span>
+         ──hash + compare <span class="c">new · changed · unchanged · gone</span>
+         ──INSERT scraped_classes + a publish-readiness proposal
+         ──UPDATE runs ──►  done | failed(reason)
+            │
+Laravel  ──reads new/changed rows  ──►  review  ──►  live tables</div>
+
+    <h2 id="tables">The nine tables</h2>
+    <p class="group-note">All owned by Python. Laravel reads them and never writes them.</p>
+<div class="tbl" id="t-discovery_candidates"><div class="tbl-head"><b>discovery_candidates</b><span class="owner py">Python writes</span><span class="desc">URLs Firecrawl found, before anyone has decided they are worth having.</span></div><div class="table-scroll"><table class="cols"><thead><tr><th>Column</th><th>Type</th><th>Note</th></tr></thead><tbody><tr class="pk"><td>id</td><td>bigint</td><td></td></tr><tr class=""><td>url</td><td>text</td><td></td></tr><tr class=""><td>query</td><td>text</td><td>The search that surfaced it</td></tr><tr class=""><td>score</td><td>numeric</td><td>Firecrawl relevance</td></tr><tr class=""><td>status</td><td>enum</td><td><code>pending</code> · <code>promoted</code> · <code>rejected</code></td></tr><tr class=""><td>found_at</td><td>timestamptz</td><td></td></tr></tbody></table></div><div class="tbl-foot"><b>Promoted means</b>a row in <code>sources</code> is created — still <code>pending</code> on terms, so still nothing fetches</div></div><div class="tbl" id="t-api_usage"><div class="tbl-head"><b>api_usage</b><span class="owner py">Python writes</span><span class="desc">Every paid API call. The budget ceiling reads this table, so the ceiling is real rather than intended.</span></div><div class="table-scroll"><table class="cols"><thead><tr><th>Column</th><th>Type</th><th>Note</th></tr></thead><tbody><tr class="fk"><td>run_id</td><td>bigint null</td><td></td></tr><tr class=""><td>provider</td><td>enum</td><td><code>firecrawl</code></td></tr><tr class=""><td>operation</td><td>text</td><td><code>search</code> · <code>scrape</code></td></tr><tr class=""><td>credits</td><td>int</td><td></td></tr><tr class=""><td>called_at</td><td>timestamptz</td><td></td></tr></tbody></table></div><div class="tbl-foot"><b>Hard stop</b>The call that would exceed the budget is refused before it is made, not counted after</div></div><div class="tbl" id="t-sources"><div class="tbl-head"><b>sources</b><span class="owner py">Python writes</span><span class="desc">The registry. One row per catalogue, directory or provider site.</span></div><div class="table-scroll"><table class="cols"><thead><tr><th>Column</th><th>Type</th><th>Note</th></tr></thead><tbody><tr class="pk"><td>id</td><td>bigint</td><td></td></tr><tr class=""><td>name / base_url</td><td>text</td><td></td></tr><tr class=""><td>kind</td><td>enum</td><td><code>catalogue</code> · <code>directory</code> · <code>provider_site</code></td></tr><tr class=""><td>platform</td><td>text null</td><td>activenet · civicrec · rec1 …</td></tr><tr class=""><td>terms_verdict</td><td>enum</td><td><code>green</code> · <code>amber</code> · <code>red</code> · <code>pending</code> · <code>unknown</code></td></tr><tr class=""><td>terms_evidence</td><td>text null</td><td><strong>The quoted clause.</strong> A verdict without one is not a verdict</td></tr><tr class=""><td>crawl_delay_s / daily_cap</td><td>int</td><td></td></tr><tr class=""><td>next_run_at / refresh_interval_days</td><td></td><td>When it is due again</td></tr><tr class=""><td>health</td><td>enum</td><td><code>healthy</code> · <code>degraded</code> · <code>failing</code> · <code>refused</code> · <code>broken</code></td></tr><tr class=""><td>baseline_yield / last_yield</td><td>int null</td><td>Records per run. A clean fetch far below baseline means <code>broken</code></td></tr></tbody></table></div><div class="tbl-foot"><b>Only green is ever fetched</b><code>pending</code> is visibly waiting, not silently dead</div></div><div class="tbl" id="t-runs"><div class="tbl-head"><b>runs</b><span class="owner py">Python writes</span><span class="desc">What Laravel asked for. Python claims a row and works it.</span></div><div class="table-scroll"><table class="cols"><thead><tr><th>Column</th><th>Type</th><th>Note</th></tr></thead><tbody><tr class="pk"><td>id</td><td>bigint</td><td></td></tr><tr class=""><td>status</td><td>enum</td><td><code>queued</code> · <code>running</code> · <code>done</code> · <code>failed</code></td></tr><tr class=""><td>reason</td><td>enum</td><td><code>nightly</code> · <code>admin</code> · <code>retry</code> — who asked</td></tr><tr class=""><td>worker</td><td>text null</td><td></td></tr><tr class=""><td>heartbeat_at</td><td>timestamptz null</td><td>Tells slow from dead; a timeout cannot</td></tr><tr class=""><td>started_at / finished_at</td><td>timestamptz null</td><td></td></tr><tr class=""><td>error</td><td>text null</td><td></td></tr></tbody></table></div><div class="tbl-foot"><b>Two workers never collide</b><code>FOR UPDATE SKIP LOCKED</code> on the claim, and a partial unique index stops two runs for one source</div></div><div class="tbl" id="t-run_sources"><div class="tbl-head"><b>run_sources</b><span class="owner py">Python writes</span><span class="desc">Per-source outcome inside a run — the history health is calculated from.</span></div><div class="table-scroll"><table class="cols"><thead><tr><th>Column</th><th>Type</th><th>Note</th></tr></thead><tbody><tr class="fk"><td>run_id / source_id</td><td>bigint</td><td></td></tr><tr class=""><td>fetches_ok / fetches_failed</td><td>int</td><td></td></tr><tr class=""><td>records_seen</td><td>int</td><td>Everything the source offered</td></tr><tr class=""><td>records_new / changed / unchanged / gone</td><td>int</td><td>The change breakdown</td></tr><tr class=""><td>error</td><td>text null</td><td></td></tr></tbody></table></div></div><div class="tbl" id="t-fetches"><div class="tbl-head"><b>fetches</b><span class="owner py">Python writes</span><span class="desc">Every request made. The audit trail for every byte taken from someone else's server.</span></div><div class="table-scroll"><table class="cols"><thead><tr><th>Column</th><th>Type</th><th>Note</th></tr></thead><tbody><tr class="pk"><td>id</td><td>bigint</td><td></td></tr><tr class="fk"><td>run_id / source_id</td><td>bigint</td><td></td></tr><tr class=""><td>url</td><td>text</td><td></td></tr><tr class=""><td>status_code</td><td>int null</td><td></td></tr><tr class=""><td>etag / last_modified</td><td>text null</td><td>Conditional requests — politeness and speed</td></tr><tr class=""><td>content_hash</td><td>text null</td><td></td></tr><tr class=""><td>fetched_at</td><td>timestamptz</td><td></td></tr><tr class=""><td>error</td><td>text null</td><td>Refusals recorded honestly, never retried away</td></tr></tbody></table></div></div><div class="tbl" id="t-pages"><div class="tbl-head"><b>pages</b><span class="owner py">Python writes</span><span class="desc">Page bodies, stored once per hash. An unchanged page costs nothing to re-read.</span></div><div class="table-scroll"><table class="cols"><thead><tr><th>Column</th><th>Type</th><th>Note</th></tr></thead><tbody><tr class="fk"><td>fetch_id</td><td>bigint</td><td></td></tr><tr class="uq"><td>content_hash</td><td>text</td><td>The address</td></tr><tr class=""><td>body</td><td>bytea</td><td>Compressed</td></tr><tr class=""><td>extracted_at</td><td>timestamptz null</td><td></td></tr></tbody></table></div></div><div class="tbl" id="t-scraped_classes"><div class="tbl-head"><b>scraped_classes</b><span class="owner py">Python writes</span><span class="desc">The output. One row per class, complete — this is what Laravel judges.</span></div><div class="table-scroll"><table class="cols"><thead><tr><th>Column</th><th>Type</th><th>Note</th></tr></thead><tbody><tr class="pk"><td>id</td><td>bigint</td><td></td></tr><tr class="fk"><td>source_id / run_id</td><td>bigint</td><td></td></tr><tr class=""><td>external_ref</td><td>text null</td><td>The source's own id, where it has one</td></tr><tr class=""><td>name</td><td>text</td><td></td></tr><tr class=""><td>age_min / age_max</td><td>int null</td><td></td></tr><tr class=""><td>starts_on / ends_on</td><td>date null</td><td>From the date range</td></tr><tr class=""><td>days</td><td>text null</td><td>Where offered — 0% on endpoints today</td></tr><tr class=""><td>price_text</td><td>text null</td><td>Where offered — 0% on endpoints today</td></tr><tr class=""><td>venue_name</td><td>text null</td><td><strong>A name, not an address.</strong> Geocoding needs a lookup</td></tr><tr class=""><td>description</td><td>text null</td><td></td></tr><tr class=""><td>detail_url</td><td>text</td><td></td></tr><tr class=""><td>raw</td><td>jsonb</td><td><strong>Exactly what the source gave us</strong> — the row-level evidence</td></tr><tr class=""><td>evidence</td><td>jsonb</td><td>field → the sentence or value it came from</td></tr><tr class=""><td>content_hash</td><td>text</td><td>What change detection compares</td></tr><tr class=""><td>first_seen_at / last_seen_at</td><td>timestamptz</td><td></td></tr><tr class=""><td>change_status</td><td>enum</td><td><code>new</code> · <code>changed</code> · <code>unchanged</code> · <code>gone</code></td></tr><tr class=""><td>publish_ready</td><td>boolean</td><td><strong>Python's opinion, not a decision</strong></td></tr><tr class=""><td>proposal_notes</td><td>jsonb</td><td>Why not, when not: no age, no venue, no dates</td></tr></tbody></table></div><div class="tbl-foot"><b>Python proposes, Laravel decides</b>Nothing here is on the public site. Laravel re-judges every row and writes its own tables</div></div><div class="tbl" id="t-source_health_events"><div class="tbl-head"><b>source_health_events</b><span class="owner py">Python writes</span><span class="desc">When a source changed state, and why. Transitions only — a row per run would be noise.</span></div><div class="table-scroll"><table class="cols"><thead><tr><th>Column</th><th>Type</th><th>Note</th></tr></thead><tbody><tr class="fk"><td>source_id</td><td>bigint</td><td></td></tr><tr class=""><td>from_state / to_state</td><td>enum</td><td></td></tr><tr class=""><td>reason</td><td>enum</td><td><code>status</code> · <code>yield</code> · <code>terms</code> · <code>manual</code></td></tr><tr class=""><td>detail</td><td>text</td><td>&quot;403 refused&quot; · &quot;yield 3 vs baseline 340&quot;</td></tr><tr class=""><td>occurred_at</td><td>timestamptz</td><td></td></tr></tbody></table></div><div class="tbl-foot"><b>A refused source is never retried automatically</b>Re-attempting is a human decision, recorded as <code>manual</code></div></div>
+    <h2 id="change">Telling new from old</h2>
+    <p class="group-note">Every scraped class gets a content hash. The next run compares.</p>
+    <div class="rel-wrap"><table class="rel">
+      <thead><tr><th>Comparison</th><th>Status</th><th>What happens</th></tr></thead>
+      <tbody>
+        <tr><td>Same hash as last time</td><td><code>unchanged</code></td><td>Touch <code>last_seen_at</code>. Nothing for Laravel to do</td></tr>
+        <tr><td>Hash differs</td><td><code>changed</code></td><td>New row; Laravel re-judges it</td></tr>
+        <tr><td>Not seen before</td><td><code>new</code></td><td>New row; Laravel judges it</td></tr>
+        <tr><td>Was there, now absent</td><td><code>gone</code></td><td><strong>Flagged only.</strong> Never deleted</td></tr>
+      </tbody>
+    </table></div>
+    <div class="callout warn">
+      <b>Absence is not evidence of cancellation</b>
+      <p>A site redesign, a pagination change, or a half-failed fetch all look exactly like every class disappearing. So <code>gone</code> needs two consecutive clean runs, a healthy yield, and a cap: if more than a third of a source's classes would vanish at once, none are flagged and one alert is raised instead.</p>
+    </div>
+
+    <h2 id="open">Open for the team</h2>
+    <div class="rel-wrap"><table class="rel">
+      <thead><tr><th>Question</th><th>Why it matters</th></tr></thead>
+      <tbody>
+        <tr><td>Does the provider come from the class, or separately?</td><td>Endpoint data gives a venue <em>name</em> only. A business record has to be inferred or looked up</td></tr>
+        <tr><td>What makes <code>publish_ready</code> true?</td><td>Name plus what else? Age? A resolvable venue? It sets how much lands in review</td></tr>
+        <tr><td>Where does geocoding happen?</td><td>A venue name is not an address. Python, Laravel, or a lookup table somebody maintains</td></tr>
+        <tr><td>Prose sources</td><td>Provider websites give sparse fields, not whole classes. Same table, mostly empty — or a different path</td></tr>
+      </tbody>
+    </table></div>
+
+  </main>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var GROUPS = [
+    ["Overview", [["roles", "the seven jobs"], ["boundary", "the boundary"], ["flow", "how a run works"]]],
+    ["Tables", [["t-discovery_candidates", "discovery_candidates"], ["t-api_usage", "api_usage"],
+                ["t-sources", "sources"], ["t-runs", "runs"], ["t-run_sources", "run_sources"],
+                ["t-fetches", "fetches"], ["t-pages", "pages"],
+                ["t-scraped_classes", "scraped_classes"], ["t-source_health_events", "source_health_events"]]],
+    ["Reference", [["change", "new vs old"], ["open", "open questions"]]]
+  ];
+  var nav = document.getElementById("rail-nav");
+  GROUPS.forEach(function (g) {
+    var h = document.createElement("h4");
+    h.textContent = g[0];
+    nav.appendChild(h);
+    g[1].forEach(function (r) {
+      var a = document.createElement("a");
+      a.href = "#" + r[0];
+      a.textContent = r[1];
+      a.dataset.target = r[0];
+      nav.appendChild(a);
+    });
+  });
+  var links = Array.prototype.slice.call(nav.querySelectorAll("a"));
+  if ("IntersectionObserver" in window) {
+    var obs = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        links.forEach(function (l) { l.classList.toggle("current", l.dataset.target === e.target.id); });
+      });
+    }, { rootMargin: "-8% 0px -80% 0px" });
+    links.forEach(function (l) {
+      var el = document.getElementById(l.dataset.target);
+      if (el) obs.observe(el);
+    });
+  }
+})();
+</script>
+
+</body>
+</html>
