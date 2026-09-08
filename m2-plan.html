@@ -1,0 +1,427 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>M2 — Schema and Seed — AfterschoolDirectoryUSA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+
+<style>
+:root {
+  --ground:      #F2F4F0;
+  --surface:     #FBFCFA;
+  --surface-2:   #E9ECE6;
+  --line:        #D2D8D1;
+  --line-strong: #B4BEB6;
+  --text:        #14201F;
+  --text-2:      #4A5754;
+  --text-3:      #6C7A76;
+  --accent:      #125C63;
+  --accent-soft: #DCEBEA;
+  --signal:      #A8500E;
+  --signal-soft: #F6E6D6;
+  --danger:      #8C1F35;
+  --danger-soft: #F4DEE2;
+  --code-bg:     #ECEFEA;
+
+  --f-display: "Newsreader", ui-serif, Georgia, serif;
+  --f-body: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground:      #0C1416;
+    --surface:     #121C1E;
+    --surface-2:   #1A2528;
+    --line:        #263436;
+    --line-strong: #3A4B4E;
+    --text:        #E3EAE7;
+    --text-2:      #A7B6B3;
+    --text-3:      #7E8F8C;
+    --accent:      #5FB8BE;
+    --accent-soft: #10312F;
+    --signal:      #D9903F;
+    --signal-soft: #33210E;
+    --danger:      #E0788C;
+    --danger-soft: #35141C;
+    --code-bg:     #101A1C;
+  }
+}
+
+:root[data-theme="dark"] {
+  --ground:      #0C1416;
+  --surface:     #121C1E;
+  --surface-2:   #1A2528;
+  --line:        #263436;
+  --line-strong: #3A4B4E;
+  --text:        #E3EAE7;
+  --text-2:      #A7B6B3;
+  --text-3:      #7E8F8C;
+  --accent:      #5FB8BE;
+  --accent-soft: #10312F;
+  --signal:      #D9903F;
+  --signal-soft: #33210E;
+  --danger:      #E0788C;
+  --danger-soft: #35141C;
+  --code-bg:     #101A1C;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--text);
+  font-family: var(--f-body);
+  font-size: 15.5px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+.masthead {
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+.masthead-inner {
+  max-width: 82rem;
+  margin: 0 auto;
+  padding: 2.4rem 1.5rem 1.9rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.4rem 3rem;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+.eyebrow {
+  font-family: var(--f-mono);
+  font-size: 0.71rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 0.65rem;
+}
+h1 {
+  font-family: var(--f-display);
+  font-weight: 500;
+  font-size: clamp(1.9rem, 4vw, 2.8rem);
+  line-height: 1.08;
+  letter-spacing: -0.015em;
+  margin: 0;
+  text-wrap: balance;
+}
+.standfirst {
+  font-family: var(--f-display);
+  font-size: 1.08rem;
+  color: var(--text-2);
+  max-width: 48ch;
+  margin: 0.8rem 0 0;
+}
+.masthead-meta {
+  display: grid;
+  gap: 0.5rem;
+  font-family: var(--f-mono);
+  font-size: 0.75rem;
+  color: var(--text-3);
+  min-width: 14rem;
+}
+.masthead-meta div { display: flex; gap: 1rem; justify-content: space-between; }
+.masthead-meta span:last-child { color: var(--text-2); text-align: right; }
+
+.shell {
+  max-width: 82rem;
+  margin: 0 auto;
+  padding: 0 1.5rem 5rem;
+  display: grid;
+  grid-template-columns: 14rem minmax(0, 1fr);
+  gap: 3rem;
+  align-items: start;
+}
+
+.rail { position: sticky; top: 1.5rem; padding-top: 2.2rem; display: grid; gap: 1.2rem; }
+.rail h4 {
+  font-family: var(--f-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin: 0.7rem 0 0.3rem;
+}
+.rail a {
+  display: block;
+  padding: 0.22rem 0.5rem;
+  border-radius: 3px;
+  text-decoration: none;
+  color: var(--text-2);
+  font-family: var(--f-mono);
+  font-size: 0.78rem;
+  border-left: 2px solid transparent;
+}
+.rail a:hover { background: var(--surface-2); color: var(--text); }
+.rail a.current { border-left-color: var(--accent); background: var(--surface-2); color: var(--text); }
+
+main { padding-top: 2.2rem; min-width: 0; }
+
+h2 {
+  font-family: var(--f-display);
+  font-weight: 500;
+  font-size: 1.65rem;
+  letter-spacing: -0.01em;
+  margin: 3rem 0 0.3rem;
+  padding-top: 1.2rem;
+  border-top: 2px solid var(--line-strong);
+  scroll-margin-top: 1rem;
+}
+h2:first-of-type { margin-top: 0; border-top: none; padding-top: 0; }
+.group-note { color: var(--text-2); margin: 0 0 1.6rem; max-width: 70ch; }
+p { margin: 0 0 1rem; max-width: 74ch; }
+a { color: var(--accent); }
+code {
+  font-family: var(--f-mono);
+  font-size: 0.87em;
+  background: var(--surface-2);
+  padding: 0.08em 0.32em;
+  border-radius: 3px;
+}
+
+/* ---------- schema map ---------- */
+
+.map-wrap {
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--surface);
+  overflow-x: auto;
+  margin: 0 0 0.7rem;
+  padding: 0.5rem;
+}
+.map { display: block; width: 100%; min-width: 900px; height: auto; }
+.map .zone { fill: var(--ground); stroke: var(--line); stroke-dasharray: 3 3; }
+.map .zone-label {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  fill: var(--text-3);
+}
+.map .box { fill: var(--surface); stroke: var(--line-strong); stroke-width: 1; }
+.map .box.py  { stroke: var(--signal); stroke-width: 1.5; }
+.map .box.app { stroke: var(--accent); stroke-width: 1.5; }
+.map .box.both{ stroke: var(--danger); stroke-width: 1.5; }
+.map .tname { font-family: var(--f-mono); font-size: 12.5px; font-weight: 500; fill: var(--text); }
+.map .tnote { font-family: var(--f-body); font-size: 10.5px; fill: var(--text-3); }
+.map .link { fill: none; stroke: var(--line-strong); stroke-width: 1.4; }
+.map .link.key { stroke: var(--accent); stroke-width: 2; }
+.map .dot { fill: var(--line-strong); }
+.map .dot.key { fill: var(--accent); }
+.map-note { font-size: 0.8rem; color: var(--text-3); margin: 0 0 2rem; max-width: 74ch; }
+
+/* ---------- table cards ---------- */
+
+.tbl {
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--surface);
+  margin: 0 0 1.6rem;
+  overflow: hidden;
+  scroll-margin-top: 1rem;
+}
+.tbl-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.6rem 1rem;
+  padding: 0.6rem 0.9rem;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--line);
+}
+.tbl-head b {
+  font-family: var(--f-mono);
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+.tbl-head .desc { color: var(--text-2); font-size: 0.86rem; flex: 1 1 16rem; }
+.owner {
+  font-family: var(--f-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.12rem 0.45rem;
+  border-radius: 3px;
+  white-space: nowrap;
+  border: 1px solid;
+}
+.owner.py  { color: var(--signal); border-color: var(--signal); background: var(--signal-soft); }
+.owner.app { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
+.owner.both{ color: var(--danger); border-color: var(--danger); background: var(--danger-soft); }
+
+.cols { width: 100%; border-collapse: collapse; font-size: 0.83rem; }
+.cols th {
+  font-family: var(--f-mono);
+  font-weight: 500;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-3);
+  text-align: left;
+  padding: 0.42rem 0.9rem;
+  border-bottom: 1px solid var(--line);
+}
+.cols td {
+  padding: 0.36rem 0.9rem;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+.cols tr:last-child td { border-bottom: none; }
+.cols td:first-child { font-family: var(--f-mono); font-size: 0.79rem; white-space: nowrap; }
+.cols td:nth-child(2) { font-family: var(--f-mono); font-size: 0.76rem; color: var(--text-2); white-space: nowrap; }
+.cols td:nth-child(3) { color: var(--text-2); }
+.cols .pk td:first-child::after { content: " PK"; color: var(--accent); font-size: 0.7rem; }
+.cols .fk td:first-child::after { content: " FK"; color: var(--signal); font-size: 0.7rem; }
+.cols .uq td:first-child::after { content: " UQ"; color: var(--text-3); font-size: 0.7rem; }
+.table-scroll { overflow-x: auto; }
+
+.tbl-foot {
+  padding: 0.5rem 0.9rem;
+  border-top: 1px solid var(--line);
+  background: var(--ground);
+  font-size: 0.79rem;
+  color: var(--text-2);
+  display: grid;
+  gap: 0.25rem;
+}
+.tbl-foot b {
+  font-family: var(--f-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  font-weight: 500;
+}
+.tbl-foot code { background: none; padding: 0; color: var(--text-2); }
+
+pre {
+  background: var(--code-bg);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 0.9rem 1.1rem;
+  overflow-x: auto;
+  margin: 1rem 0 1.6rem;
+  font-size: 0.79rem;
+  line-height: 1.6;
+}
+pre code { font-family: var(--f-mono); background: none; padding: 0; white-space: pre; }
+
+.callout {
+  border-left: 3px solid var(--accent);
+  background: var(--accent-soft);
+  padding: 0.85rem 1.1rem;
+  margin: 1.2rem 0 1.8rem;
+  border-radius: 0 3px 3px 0;
+  max-width: 74ch;
+}
+.callout.warn { border-left-color: var(--signal); background: var(--signal-soft); }
+.callout p:last-child { margin-bottom: 0; }
+.callout b { font-family: var(--f-mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; display: block; margin-bottom: 0.3rem; }
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.4rem;
+  font-size: 0.78rem;
+  color: var(--text-3);
+  margin: 0 0 2rem;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--surface);
+}
+
+.rel { width: 100%; border-collapse: collapse; font-size: 0.83rem; background: var(--surface); }
+.rel th {
+  font-family: var(--f-mono); font-weight: 500; font-size: 0.68rem;
+  text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-3);
+  text-align: left; padding: 0.45rem 0.85rem; background: var(--surface-2);
+  border-bottom: 1px solid var(--line); white-space: nowrap;
+}
+.rel td { padding: 0.4rem 0.85rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+.rel td:first-child, .rel td:nth-child(2) { font-family: var(--f-mono); font-size: 0.78rem; white-space: nowrap; }
+.rel tr:last-child td { border-bottom: none; }
+.rel-wrap { border: 1px solid var(--line); border-radius: 5px; overflow: hidden; overflow-x: auto; margin-bottom: 1.6rem; }
+.card { font-family: var(--f-mono); font-size: 0.73rem; color: var(--text-3); }
+
+@media (max-width: 900px) {
+  .shell { grid-template-columns: 1fr; gap: 0; }
+  .rail { position: static; padding-top: 1.4rem; }
+  .rail nav { display: grid; grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr)); }
+  main { padding-top: 1.4rem; }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+
+.steps { list-style:none; padding-left:0; margin:0 0 1.1rem; display:grid; gap:0.5rem; }
+.steps li { position:relative; padding:0.5rem 0.7rem 0.5rem 2rem; background:var(--surface);
+  border:1px solid var(--line); border-radius:4px; font-size:0.9rem; margin:0; }
+.steps li::before { content:""; position:absolute; left:0.65rem; top:0.72rem; width:0.75rem;
+  height:0.75rem; border:1.5px solid var(--line-strong); border-radius:2px; }
+main p { max-width:74ch; }
+</style></head>
+<body>
+<header class="masthead">
+  <div class="masthead-inner">
+    <div>
+      <p class="eyebrow">AfterschoolDirectoryUSA · implementation plan</p>
+      <h1>M2 — schema and seed</h1>
+      <p class="standfirst">Twenty tasks, ninety steps. Every one opens with a test that fails first.</p>
+    </div>
+    <div class="masthead-meta">
+      <div><span>Status</span><span>Rebuilt on ADR-0019</span></div>
+      <div><span>Blocked by</span><span>Phase A — three decisions</span></div>
+      <div><span>Deliverable</span><span>Schema live · LA data queryable</span></div>
+      <div><span>Model</span><span>Python proposes, Laravel decides</span></div>
+    </div>
+  </div>
+</header>
+
+<div class="shell">
+  <aside class="rail"><nav id="rail-nav"><a href="#what-m2-owes-the-client-and-how-this-plan-pays-it" data-target="what-m2-owes-the-client-and-how-this-plan-pays-it">What M2 owes the client, and how t</a><a href="#global-constraints" data-target="global-constraints">Global Constraints</a><a href="#task-1-settle-the-three-open-items" data-target="task-1-settle-the-three-open-items" style="padding-left:1.1rem;font-size:0.75rem">Task 1: Settle the three open item</a><a href="#task-2-one-note-to-the-client" data-target="task-2-one-note-to-the-client" style="padding-left:1.1rem;font-size:0.75rem">Task 2: One note to the client</a><a href="#task-3-freeze-the-schema" data-target="task-3-freeze-the-schema" style="padding-left:1.1rem;font-size:0.75rem">Task 3: Freeze the schema</a><a href="#task-4-python-s-tables-and-the-pipeline-role" data-target="task-4-python-s-tables-and-the-pipeline-role" style="padding-left:1.1rem;font-size:0.75rem">Task 4: Python's tables and the pi</a><a href="#task-5-sources-the-shared-table" data-target="task-5-sources-the-shared-table" style="padding-left:1.1rem;font-size:0.75rem">Task 5: `sources` — the shared tab</a><a href="#task-6-laravel-s-live-tables" data-target="task-6-laravel-s-live-tables" style="padding-left:1.1rem;font-size:0.75rem">Task 6: Laravel's live tables</a><a href="#task-7-taxonomy-cms-people" data-target="task-7-taxonomy-cms-people" style="padding-left:1.1rem;font-size:0.75rem">Task 7: Taxonomy, CMS, people</a><a href="#task-8-public-views-and-the-web-role" data-target="task-8-public-views-and-the-web-role" style="padding-left:1.1rem;font-size:0.75rem">Task 8: Public views and the web r</a><a href="#task-9-the-poller" data-target="task-9-the-poller" style="padding-left:1.1rem;font-size:0.75rem">Task 9: The poller</a><a href="#task-10-reading-a-source-into-whole-classes" data-target="task-10-reading-a-source-into-whole-classes" style="padding-left:1.1rem;font-size:0.75rem">Task 10: Reading a source into who</a><a href="#task-11-change-detection" data-target="task-11-change-detection" style="padding-left:1.1rem;font-size:0.75rem">Task 11: Change detection</a><a href="#task-12-health-and-the-publish-readiness-proposal" data-target="task-12-health-and-the-publish-readiness-proposal" style="padding-left:1.1rem;font-size:0.75rem">Task 12: Health and the publish-re</a><a href="#task-13-judgeclass" data-target="task-13-judgeclass" style="padding-left:1.1rem;font-size:0.75rem">Task 13: JudgeClass</a><a href="#task-14-scheduling-and-the-run-now-action" data-target="task-14-scheduling-and-the-run-now-action" style="padding-left:1.1rem;font-size:0.75rem">Task 14: Scheduling and the Run no</a><a href="#task-15-the-admin" data-target="task-15-the-admin" style="padding-left:1.1rem;font-size:0.75rem">Task 15: The admin</a><a href="#task-16-overture-for-la-county" data-target="task-16-overture-for-la-county" style="padding-left:1.1rem;font-size:0.75rem">Task 16: Overture for LA County</a><a href="#task-17-venue-resolution" data-target="task-17-venue-resolution" style="padding-left:1.1rem;font-size:0.75rem">Task 17: Venue resolution</a><a href="#task-18-indexes-with-evidence" data-target="task-18-indexes-with-evidence" style="padding-left:1.1rem;font-size:0.75rem">Task 18: Indexes with evidence</a><a href="#task-19-qa" data-target="task-19-qa" style="padding-left:1.1rem;font-size:0.75rem">Task 19: QA</a><a href="#task-20-demo-and-submit" data-target="task-20-demo-and-submit" style="padding-left:1.1rem;font-size:0.75rem">Task 20: Demo and submit</a><a href="#register-what-is-designed-but-not-in-m2" data-target="register-what-is-designed-but-not-in-m2">Register — what is designed but no</a><a href="#the-numbers-that-are-still-guesses" data-target="the-numbers-that-are-still-guesses">The numbers that are still guesses</a></nav></aside>
+  <main>
+    <p style="margin-bottom:1.6rem">The design behind this plan:
+      <a href="python.html"><strong>What Python does</strong></a> ·
+      <a href="laravel.html"><strong>What Laravel does</strong></a> ·
+      <a href="schema.html"><strong>the schema index</strong></a> ·
+      <a href="index.html"><strong>the architecture review</strong></a>.</p>
+    <div class="callout"><p><strong>For agentic workers:</strong> REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (<code>- [ ]</code>) syntax for tracking.</p></div><p><strong>Goal:</strong> Deliver M2 — schema live, LA place data loaded and queryable, provenance demonstrable — on the classes-first model of ADR-0019.</p><p><strong>Architecture:</strong> Postgres is the seam. Python writes whole scraped classes into its own tables; Laravel re-judges each one and writes the live tables. Three database roles enforce the boundary, and the public site reads views it has no permission to bypass.</p><p><strong>Tech Stack:</strong> PostgreSQL 16 + PostGIS 3.4, Laravel 13 (PHP 8.3), Python 3.11, Docker Compose, Terraform.</p><p><strong>Specs:</strong></p><ul><li><code>docs/superpowers/specs/2026-09-08-laravel-application-design.md</code> — the application half</li><li><code>docs/superpowers/specs/2026-09-08-venue-resolution-design.md</code> — how a venue name becomes coordinates</li><li><code>docs/superpowers/specs/2026-09-07-m2-infrastructure-design.md</code> — the server</li><li>Published: <code>/python.html</code>, <code>/laravel.html</code>, <code>/schema.html</code></li></ul><p><strong>ADRs that bind this work:</strong> 0001 terms posture · 0005 politeness · 0010 stack · 0012 data endpoint · 0015 the seam · 0016 source admission · 0017 write ownership · 0018 auth · <strong>0019 whole classes</strong>.</p><h2 id="what-m2-owes-the-client-and-how-this-plan-pays-it">What M2 owes the client, and how this plan pays it</h2><p>The contract says: <em>"Database deployed including dated occurrences and geocoding. Los Angeles bulk place data loaded and queryable. Provenance model in place."</em> Two of those phrases predate ADR-0019 and need answering honestly rather than quietly.</p><div class="rel-wrap"><table class="rel"><thead><tr><th>Contract phrase</th><th>How it is met</th><th>Honest caveat</th></tr></thead><tbody><tr><td>Database deployed</td><td>Yes — all tables, three roles, public views</td><td>—</td></tr><tr><td><strong>Dated occurrences</strong></td><td>Classes carry <code>starts_on</code> / <code>ends_on</code> at <strong>90% coverage</strong>, and date filtering works</td><td><strong>No per-date expansion.</strong> That needs <code>days</code>, which no source provides — 0% on endpoints. Expanding a range without days would be inventing dates. Raise with the client</td></tr><tr><td>Geocoding</td><td>Venues geocoded, coordinates gate publication</td><td>Automation resolves ~43% of classes; the rest is a finite venue queue (~350 names)</td></tr><tr><td><strong>LA bulk place data loaded and queryable</strong></td><td>Overture LA loaded, queryable, and used as the <strong>venue gazetteer</strong></td><td>It is no longer the spine. Same data, different job</td></tr><tr><td><strong>Provenance model in place</strong></td><td>Every live class links to its scraped row, its raw payload, its source and its fetch</td><td>Field-level claims are retired. Provenance is per row plus a per-field evidence map</td></tr></tbody></table></div><p><strong>The demo proves it:</strong> one class walked from the public page back to the raw JSON the source returned, plus a radius query on real data.</p><h2 id="global-constraints">Global Constraints</h2><ul><li><strong>Python proposes, Laravel decides.</strong> Nothing Python writes appears on the site without Laravel judging it.</li><li><strong>Three roles:</strong> <code>asd_pipeline</code>, <code>asd_app</code>, <code>asd_web</code>. Every migration grants as well as creates.</li><li><strong><code>sources</code> is the one shared table</strong> — Laravel owns the registry and the terms verdict, Python updates health and yield only. Column-level grants.</li><li><strong>Only an admin sets a terms verdict.</strong> Not editor, not reviewer, never Python.</li><li><strong>Politeness is not a terms question.</strong> One request per host, 2s apart, robots honoured, honest non-rotating user agent; 401/403/429 is terminal for that host — regardless of ADR-0001.</li><li><strong>Two tables are named carefully:</strong> <code>fetched_pages</code> (crawl bodies) and <code>content_pages</code> (CMS). Never both <code>pages</code>.</li><li><strong>No occurrences table.</strong> A date range is not a schedule.</li><li><strong>Nothing is deleted by a crawl.</strong> Absence is flagged, never actioned on one run.</li><li><strong>Measured reality:</strong> endpoint sources give name 100%, age 100%, dates 90%, description 98%, <strong>days 0%, price 0%</strong>. Provider websites give the opposite. Nothing may assume a field is present.</li></ul><hr style="border:none;border-top:2px solid var(--line-strong);margin:2.5rem 0"><h3 id="task-1-settle-the-three-open-items" style="font-family:var(--f-body);font-weight:600;font-size:1.02rem;margin:2rem 0 .6rem">Task 1: Settle the three open items</h3><p><strong>Files:</strong> Create <code>docs/superpowers/specs/2026-09-08-open-items-resolved.md</code></p><ul class="steps"><li><strong>Step 1: Category assignment</strong></li></ul><p>Nothing currently assigns a category, and hubs, filters and search all need one. Decide between: Python proposes from the class name and description; an editor confirms in review; or categories are assigned per source. Record the decision and the fallback for an unmatched class.</p><ul class="steps"><li><strong>Step 2: Kid-relevance threshold</strong></li></ul><p><code>ages 7–99</code> is an adult class in a mixed catalogue. <code>src/kid_relevance.py</code> exists; the rule does not. Decide the cutoff — a candidate is <code>age_min &lt;= 17</code> <strong>and</strong> <code>age_max - age_min &lt;= 30</code> — and record what happens to a class that fails it: rejected, or held.</p><ul class="steps"><li><strong>Step 3: Provider websites</strong></li></ul><p>Sparse fields, 0% dates, no whole classes to propose. Decide: the same <code>scraped_classes</code> table mostly empty, a business-only path with no classes, or deferred to M3 entirely. <strong>Deferring is a legitimate answer</strong> and keeps M2 focused on endpoint sources.</p><ul class="steps"><li><strong>Step 4: Commit</strong></li></ul><h3 id="task-2-one-note-to-the-client" style="font-family:var(--f-body);font-weight:600;font-size:1.02rem;margin:2rem 0 .6rem">Task 2: One note to the client</h3><p><strong>Files:</strong> Create <code>docs/client/m2-decisions-note.txt</code></p><ul class="steps"><li><strong>Step 1: Four items, each with the cost of a no</strong></li></ul><p>1. <strong>Written confirmation that Red verdicts are admissible</strong> — relayed verbally, reversing the 31 August directive. One line in the thread completes the record. 2. <strong>Dated occurrences.</strong> Sources give a date <em>range</em>, not a schedule. Date filtering works; per-date expansion does not, and inventing dates is the alternative. Confirm the range satisfies M2. 3. <strong>Listing images.</strong> No requirement exists either way. Object storage is already in the plan. 4. <strong>The empty <code>afterschool-search</code> repo</strong> can be deleted whenever convenient — only an owner can.</p><ul class="steps"><li><strong>Step 2: Send, record the answers, commit</strong></li></ul><h3 id="task-3-freeze-the-schema" style="font-family:var(--f-body);font-weight:600;font-size:1.02rem;margin:2rem 0 .6rem">Task 3: Freeze the schema</h3><p><strong>Files:</strong> Create <code>docs/verification/G-03-schema-freeze.md</code></p><ul class="steps"><li><strong>Step 1: Circulate the three published pages 48 hours ahead</strong></li><li><strong>Step 2: Agenda</strong> — the seam, the tables both sides own, grants, the judging conditions, what is deliberately absent</li><li><strong>Step 3: Record the unmeasured numbers as guesses with owners</strong> — the venue-resolution target, the kid-relevance cutoff, the six judging thresholds</li><li><strong>Step 4: Write the record, commit, announce the freeze</strong></li></ul><hr style="border:none;border-top:2px solid var(--line-strong);margin:2.5rem 0"><h3 id="task-4-python-s-tables-and-the-pipeline-role" style="font-family:var(--f-body);font-weight:600;font-size:1.02rem;margin:2rem 0 .6rem">Task 4: Python's tables and the pipeline role</h3><p><strong>Files:</strong> <code>afterschool-app/database/migrations/*_create_pipeline_tables.php</code>, <code>tests/Feature/Database/GrantsTest.php</code></p><ul class="steps"><li><strong>Step 1: Write the failing grant test</strong></li></ul><pre><code>public function test_the_pipeline_role_cannot_write_live_tables(): void
+{
+    $this-&gt;expectException(QueryException::class);
+    DB::connection('pgsql_pipeline')-&gt;statement("UPDATE classes SET name = 'x'");
+}</code></pre><ul class="steps"><li><strong>Step 2: Run it — fails, nothing exists yet</strong></li><li><strong>Step 3: Create</strong> <code>discovery_candidates</code>, <code>api_usage</code>, <code>runs</code>, <code>run_sources</code>, <code>fetches</code>, <code>fetched_pages</code>, <code>scraped_classes</code>, <code>source_health_events</code> — columns from <code>/python.html</code></li><li><strong>Step 4: The index that stops two crawlers on one host</strong></li></ul><pre><code>CREATE UNIQUE INDEX one_active_run_per_source
+    ON run_sources (source_id) WHERE status IN ('queued','running');</code></pre><ul class="steps"><li><strong>Step 5: Grant</strong> — <code>asd_pipeline</code> gets INSERT on its own tables, SELECT on <code>sources</code>, and no grant whatsoever on the live tables</li><li><strong>Step 6: Test passes — and confirm it is a permission error, not a missing table</strong></li><li><strong>Step 7: Commit</strong></li></ul><h3 id="task-5-sources-the-shared-table" style="font-family:var(--f-body);font-weight:600;font-size:1.02rem;margin:2rem 0 .6rem">Task 5: <code>sources</code> — the shared table</h3><p><strong>Files:</strong> <code>*_create_sources_table.php</code>, <code>tests/Feature/Database/SharedSourcesTest.php</code></p><ul class="steps"><li><strong>Step 1: Write two failing tests</strong></li></ul><pre><code>public function test_pipeline_may_update_health_but_not_the_verdict(): void
+public function test_only_the_app_role_may_change_a_terms_verdict(): void</code></pre><ul class="steps"><li><strong>Step 2: Create the table</strong> — registry, verdict + quoted clause, politeness, schedule, health, yield baseline</li><li><strong>Step 3: Column-level grants</strong></li></ul><pre><code>GRANT SELECT ON sources TO asd_pipeline;
+GRANT UPDATE (health, last_yield, baseline_yield, last_success_at,
+              last_failure_at, consecutive_failures, next_run_at) ON sources TO asd_pipeline;
+-- terms_verdict and terms_evidence are deliberately absent</code></pre><ul class="steps"><li><strong>Step 4: Both tests green — commit</strong></li></ul><h3 id="task-6-laravel-s-live-tables" style="font-family:var(--f-body);font-weight:600;font-size:1.02rem;margin:2rem 0 .6rem">Task 6: Laravel's live tables</h3><p><strong>Files:</strong> <code>*_create_catalog_tables.php</code>, <code>tests/Feature/Database/PublishGateTest.php</code></p><ul class="steps"><li><strong>Step 1: Write the failing publish-gate test</strong> — a venue-less, non-online class cannot be publishable</li><li><strong>Step 2: Create</strong> <code>businesses</code>, <code>venues</code>, <code>classes</code> — columns from <code>/laravel.html</code>, including <code>scraped_class_id</code>, soft deletes and timestamps</li><li><strong>Step 3: Constraint</strong></li></ul><pre><code>ALTER TABLE classes ADD CONSTRAINT publishable_needs_location
+  CHECK (NOT is_publishable OR venue_id IS NOT NULL OR is_online);</code></pre><ul class="steps"><li><strong>Step 4: Green — commit</strong></li></ul><h3 id="task-7-taxonomy-cms-people" style="font-family:var(--f-body);font-weight:600;font-size:1.02rem;margin:2rem 0 .6rem">Task 7: Taxonomy, CMS, people</h3><p><strong>Files:</strong> <code>*_create_taxonomy_tables.php</code>, <code>*_create_cms_tables.php</code>, <code>CategorySeeder.php</code></p><ul class="steps"><li><strong>Step 1: Create</strong> <code>cities</code> (with <code>metro</code>), <code>categories</code>, <code>category_synonyms</code>, join tables, <code>hub_pages</code>, <code>url_redirects</code></li><li><strong>Step 2: Create</strong> <code>content_pages</code>, <code>media</code>, <code>menus</code>, <code>settings</code>, <code>activity_log</code>, <code>review_items</code>, <code>merge_candidates</code></li><li><strong>Step 3: Users, roles and permissions</strong> — admin, editor, reviewer, customer</li><li><strong>Step 4: Assert the public path cannot create a privileged role</strong></li></ul><pre><code>public function test_posting_a_role_to_registration_still_produces_a_customer(): void</code></pre><p>It will look redundant. It is the regression that matters most.</p><ul class="steps"><li><strong>Step 5: Seed the eight categories and the first synonyms — commit</strong></li></ul><h3 id="task-8-public-views-and-the-web-role" style="font-family:var(--f-body);font-weight:600;font-size:1.02rem;margin:2rem 0 .6rem">Task 8: Public views and the web role</h3><p><strong>Files:</strong> <code>*_create_public_views.php</code>, <code>config/database.php</code>, <code>tests/Feature/Database/PublicBoundaryTest.php</code></p><ul class="steps"><li><strong>Step 1: Three failing tests</strong> — the web role cannot read base tables; sees only publishable rows; a class is never public while its business is not</li><li><strong>Step 2: Create</strong> <code>public_businesses</code>, <code>public_venues</code>, <code>public_classes</code>, <code>indexable_classes</code></li><li><strong>Step 3: Create <code>asd_web</code></strong> with SELECT on the views and <strong>no grant on any base table</strong></li><li><strong>Step 4: Point the public models at the <code>pgsql_web</code> connection</strong></li><li><strong>Step 5: Three green, the first for a permission reason — commit</strong></li></ul><hr style="border:none;border-top:2px solid var(--line-strong);margin:2.5rem 0"><h3 id="task-9-the-poller" style="font-family:var(--f-body);font-weight:600;font-size:1.02rem;margin:2rem 0 .6rem">Task 9: The poller</h3><p><strong>Files:</strong> <code>afterschool-pipeline/src/asd_pipeline/runner/poller.py</code>, <code>tests/test_poller.py</code></p><ul class="steps"><li><strong>Step 1: Write the concurrency test first</strong> — two pollers, one queued run, exactly one winner</li><li><strong>Step 2: Implement the claim</strong></li></ul><pre><code>UPDATE runs SET status='running', started_at=now(), worker=%(worker)s, heartbeat_at=now()
+ WHERE id = (SELECT id FROM runs WHERE status='queued'
+              ORDER BY created_at FOR UPDATE SKIP LOCKED LIMIT 1)
+RETURNING id;</code></pre><ul class="steps"><li><strong>Step 3: Heartbeat every 30s while working; mark done or failed at the end</strong></li><li><strong>Step 4: Green — commit</strong></li></ul><h3 id="task-10-reading-a-source-into-whole-classes" style="font-family:var(--f-body);font-weight:600;font-size:1.02rem;margin:2rem 0 .6rem">Task 10: Reading a source into whole classes</h3><p><strong>Files:</strong> <code>runner/harvest.py</code>, <code>tests/test_harvest.py</code></p><ul class="steps"><li><strong>Step 1: Every URL passes <code>gate.check</code> first.</strong> A test asserts a non-green source fetches nothing</li><li><strong>Step 2: Read the endpoint</strong>; map each activity to a <code>scraped_classes</code> row — name, ages, the parsed date range, venue name, description, detail URL</li><li><strong>Step 3: Keep the raw payload</strong> in <code>raw</code>, and a per-field <code>evidence</code> map</li><li><strong>Step 4: Commit</strong></li></ul><h3 id="task-11-change-detection" style="font-family:var(--f-body);font-weight:600;font-size:1.02rem;margin:2rem 0 .6rem">Task 11: Change detection</h3><p><strong>Files:</strong> <code>runner/changes.py</code>, <code>tests/test_changes.py</code></p><ul class="steps"><li><strong>Step 1: Write the four-case test</strong> — new, changed, unchanged, gone</li><li><strong>Step 2: Content hash per class; compare against the last run</strong></li><li><strong>Step 3: <code>gone</code> is flagged only</strong> — and requires two consecutive clean runs, a healthy yield, and never more than a third of a source at once</li><li><strong>Step 4: Green — commit</strong></li></ul><h3 id="task-12-health-and-the-publish-readiness-proposal" style="font-family:var(--f-body);font-weight:600;font-size:1.02rem;margin:2rem 0 .6rem">Task 12: Health and the publish-readiness proposal</h3><p><strong>Files:</strong> <code>runner/health.py</code>, <code>runner/propose.py</code></p><ul class="steps"><li><strong>Step 1: Yield regression</strong> — a clean fetch far below the trailing median means <code>broken</code>, and writes a <code>source_health_events</code> row</li><li><strong>Step 2: A refusal (401/403/429) is terminal</strong> — never retried automatically</li><li><strong>Step 3: Set <code>publish_ready</code> and <code>proposal_notes</code></strong> — an opinion, never a decision</li><li><strong>Step 4: Commit</strong></li></ul><hr style="border:none;border-top:2px solid var(--line-strong);margin:2.5rem 0"><h3 id="task-13-judgeclass" style="font-family:var(--f-body);font-weight:600;font-size:1.02rem;margin:2rem 0 .6rem">Task 13: JudgeClass</h3><p>The most important class in the application. Everything published passes through it.</p><p><strong>Files:</strong> <code>app/Domain/Judging/Actions/JudgeClass.php</code>, <code>tests/Unit/Domain/Judging/JudgeClassTest.php</code></p><ul class="steps"><li><strong>Step 1: Write six failing tests, one per condition</strong></li></ul><p>missing fields · venue unresolved · weak source · conflicts with a human decision · suspicious change · not obviously for kids</p><ul class="steps"><li><strong>Step 2: Run — six failures</strong></li><li><strong>Step 3: Implement</strong> — confident rows upsert business, venue and class; everything else opens a <code>review_item</code></li><li><strong>Step 4: Add the invariant test</strong> — a judged row must never overwrite a value a human set</li><li><strong>Step 5: Green — commit</strong></li></ul><h3 id="task-14-scheduling-and-the-run-now-action" style="font-family:var(--f-body);font-weight:600;font-size:1.02rem;margin:2rem 0 .6rem">Task 14: Scheduling and the Run now action</h3><p><strong>Files:</strong> <code>app/Console/Commands/ScheduleRuns.php</code>, <code>app/Filament/Resources/SourceResource.php</code></p><ul class="steps"><li><strong>Step 1: The scheduler inserts a run</strong> for sources whose <code>next_run_at</code> has passed and whose verdict is green</li><li><strong>Step 2: Run now inserts the same row</strong> with <code>reason: admin</code> — one mechanism, not two</li><li><strong>Step 3: The row shows live state</strong>, and says so loudly if no worker has heartbeated</li><li><strong>Step 4: A non-green source refuses, with the reason — commit</strong></li></ul><h3 id="task-15-the-admin" style="font-family:var(--f-body);font-weight:600;font-size:1.02rem;margin:2rem 0 .6rem">Task 15: The admin</h3><p><strong>Files:</strong> <code>app/Filament/Resources/*</code></p><ul class="steps"><li><strong>Step 1: Review queue</strong> — the proposed class beside its raw payload, accept / reject / correct</li><li><strong>Step 2: Source registry</strong> — paste a URL, see the proposed verdict and its quoted clause, confirm or override. <strong>Admin only</strong></li><li><strong>Step 3: Venue resolution screen</strong> — unresolved venues ordered by how many classes each would release</li><li><strong>Step 4: Merge candidates</strong> — "Are these the same?" side by side, and <strong>both answers are remembered</strong></li><li><strong>Step 5: Commit</strong></li></ul><hr style="border:none;border-top:2px solid var(--line-strong);margin:2.5rem 0"><h3 id="task-16-overture-for-la-county" style="font-family:var(--f-body);font-weight:600;font-size:1.02rem;margin:2rem 0 .6rem">Task 16: Overture for LA County</h3><p><strong>Files:</strong> <code>afterschool-pipeline/src/asd_pipeline/seed/overture.py</code></p><ul class="steps"><li><strong>Step 1: DuckDB with the spatial extension over the Overture places GeoParquet</strong></li><li><strong>Step 2: Filter by the LA County polygon, not a bounding box</strong> — a box includes ocean and three neighbouring counties</li><li><strong>Step 3: Load as the venue gazetteer; record the CDLA-Permissive-2.0 attribution</strong></li><li><strong>Step 4: Row counts by city — this is the "bulk place data loaded and queryable" deliverable. Commit</strong></li></ul><h3 id="task-17-venue-resolution" style="font-family:var(--f-body);font-weight:600;font-size:1.02rem;margin:2rem 0 .6rem">Task 17: Venue resolution</h3><p><strong>Files:</strong> <code>seed/resolve_venues.py</code>, <code>docs/verification/M2-venue-resolution.md</code></p><ul class="steps"><li><strong>Step 1: Expand abbreviations</strong> — <code>Ctr</code>, <code>Cmty</code>, <code>Rec</code>, <code>Cplx</code>, <code>Pk</code>, <code>Sr</code>. Measured: it fixed the precision problem</li><li><strong>Step 2: Match against Overture first</strong> — free, no requests</li><li><strong>Step 3: For what remains, fetch the class detail page</strong> — one per venue, not per class</li><li><strong>Step 4: Census geocoder for the 188 inline addresses</strong></li><li><strong>Step 5: Record the hit rate against the 40% baseline.</strong> The measurement is the deliverable as much as the coordinates</li><li><strong>Step 6: Whatever survives goes to the venue queue for a human — commit</strong></li></ul><hr style="border:none;border-top:2px solid var(--line-strong);margin:2.5rem 0"><h3 id="task-18-indexes-with-evidence" style="font-family:var(--f-body);font-weight:600;font-size:1.02rem;margin:2rem 0 .6rem">Task 18: Indexes with evidence</h3><ul class="steps"><li><strong>Step 1: GIN on the class <code>search_vector</code>; GiST on <code>venues.geog</code>; composite on <code>(starts_on, ends_on)</code></strong></li><li><strong>Step 2: <code>EXPLAIN ANALYZE</code> each against real loaded data; paste the plans in unedited</strong></li><li><strong>Step 3: Time the radius query and record the number.</strong> It is a target until this step</li><li><strong>Step 4: Commit</strong></li></ul><h3 id="task-19-qa" style="font-family:var(--f-body);font-weight:600;font-size:1.02rem;margin:2rem 0 .6rem">Task 19: QA</h3><ul class="steps"><li><strong>Step 1: Fresh install — migrate, seed, load</strong></li><li><strong>Step 2: Idempotent reload — a second run changes nothing</strong></li><li><strong>Step 3: Connect as <code>asd_pipeline</code>, attempt <code>UPDATE classes</code>, assert refusal</strong></li><li><strong>Step 4: Connect as <code>asd_pipeline</code>, attempt to change a terms verdict, assert refusal</strong></li><li><strong>Step 5: Connect as <code>asd_web</code>, attempt to read a base table, assert refusal</strong></li><li><strong>Step 6: Sign the checklist; ticket what failed</strong></li></ul><h3 id="task-20-demo-and-submit" style="font-family:var(--f-body);font-weight:600;font-size:1.02rem;margin:2rem 0 .6rem">Task 20: Demo and submit</h3><ul class="steps"><li><strong>Step 1: A radius query returning real LA classes ordered by distance</strong></li><li><strong>Step 2: A count by city</strong></li><li><strong>Step 3: One class walked from the public page back to the raw JSON its source returned</strong> — this is the provenance deliverable</li><li><strong>Step 4: The map on screen</strong></li><li><strong>Step 5: Submit; capture new asks as change control, not scope</strong></li></ul><hr style="border:none;border-top:2px solid var(--line-strong);margin:2.5rem 0"><h2 id="register-what-is-designed-but-not-in-m2">Register — what is designed but not in M2</h2><div class="rel-wrap"><table class="rel"><thead><tr><th>Designed</th><th>Milestone</th></tr></thead><tbody><tr><td>Source discovery via Firecrawl, budget ceiling</td><td>M3</td></tr><tr><td>Health flagging, yield regression, digest email</td><td>M3–M5</td></tr><tr><td>Refresh cadence and withdrawal safeguards</td><td>M4</td></tr><tr><td>Category assignment at scale</td><td>M4</td></tr><tr><td>Review queue polish, venue screen, merge UI</td><td>M5</td></tr><tr><td>Class detail pages, hubs, sitemaps, structured data</td><td>M7–M9</td></tr><tr><td>Parent accounts, favourites</td><td>M8</td></tr><tr><td>Subscriptions, ads</td><td>Phase 3</td></tr></tbody></table></div><h2 id="the-numbers-that-are-still-guesses">The numbers that are still guesses</h2><div class="rel-wrap"><table class="rel"><thead><tr><th>Threshold</th><th>Current</th><th>First real data</th></tr></thead><tbody><tr><td>Venue resolution target</td><td>40% measured on 20</td><td>Task 17</td></tr><tr><td>Yield collapse → <code>broken</code></td><td>40% of trailing median</td><td>M3</td></tr><tr><td>Mass-withdrawal cap</td><td>one third of a source</td><td>M4</td></tr><tr><td>Kid-relevance cutoff</td><td>unset</td><td>Task 1</td></tr></tbody></table></div>
+  </main>
+</div>
+
+<script>
+(function () {
+  var links = Array.prototype.slice.call(document.querySelectorAll("#rail-nav a"));
+  if (!("IntersectionObserver" in window)) return;
+  var obs = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (!e.isIntersecting) return;
+      links.forEach(function (l) { l.classList.toggle("current", l.dataset.target === e.target.id); });
+    });
+  }, { rootMargin: "-8% 0px -80% 0px" });
+  links.forEach(function (l) { var el = document.getElementById(l.dataset.target); if (el) obs.observe(el); });
+})();
+</script>
+
+</body>
+</html>
