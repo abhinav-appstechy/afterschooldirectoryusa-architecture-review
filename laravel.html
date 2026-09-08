@@ -1,0 +1,526 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>What Laravel Does — AfterschoolDirectoryUSA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+
+<style>
+:root {
+  --ground:      #F2F4F0;
+  --surface:     #FBFCFA;
+  --surface-2:   #E9ECE6;
+  --line:        #D2D8D1;
+  --line-strong: #B4BEB6;
+  --text:        #14201F;
+  --text-2:      #4A5754;
+  --text-3:      #6C7A76;
+  --accent:      #125C63;
+  --accent-soft: #DCEBEA;
+  --signal:      #A8500E;
+  --signal-soft: #F6E6D6;
+  --danger:      #8C1F35;
+  --danger-soft: #F4DEE2;
+  --code-bg:     #ECEFEA;
+
+  --f-display: "Newsreader", ui-serif, Georgia, serif;
+  --f-body: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground:      #0C1416;
+    --surface:     #121C1E;
+    --surface-2:   #1A2528;
+    --line:        #263436;
+    --line-strong: #3A4B4E;
+    --text:        #E3EAE7;
+    --text-2:      #A7B6B3;
+    --text-3:      #7E8F8C;
+    --accent:      #5FB8BE;
+    --accent-soft: #10312F;
+    --signal:      #D9903F;
+    --signal-soft: #33210E;
+    --danger:      #E0788C;
+    --danger-soft: #35141C;
+    --code-bg:     #101A1C;
+  }
+}
+
+:root[data-theme="dark"] {
+  --ground:      #0C1416;
+  --surface:     #121C1E;
+  --surface-2:   #1A2528;
+  --line:        #263436;
+  --line-strong: #3A4B4E;
+  --text:        #E3EAE7;
+  --text-2:      #A7B6B3;
+  --text-3:      #7E8F8C;
+  --accent:      #5FB8BE;
+  --accent-soft: #10312F;
+  --signal:      #D9903F;
+  --signal-soft: #33210E;
+  --danger:      #E0788C;
+  --danger-soft: #35141C;
+  --code-bg:     #101A1C;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--text);
+  font-family: var(--f-body);
+  font-size: 15.5px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+.masthead {
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+.masthead-inner {
+  max-width: 82rem;
+  margin: 0 auto;
+  padding: 2.4rem 1.5rem 1.9rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.4rem 3rem;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+.eyebrow {
+  font-family: var(--f-mono);
+  font-size: 0.71rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 0.65rem;
+}
+h1 {
+  font-family: var(--f-display);
+  font-weight: 500;
+  font-size: clamp(1.9rem, 4vw, 2.8rem);
+  line-height: 1.08;
+  letter-spacing: -0.015em;
+  margin: 0;
+  text-wrap: balance;
+}
+.standfirst {
+  font-family: var(--f-display);
+  font-size: 1.08rem;
+  color: var(--text-2);
+  max-width: 48ch;
+  margin: 0.8rem 0 0;
+}
+.masthead-meta {
+  display: grid;
+  gap: 0.5rem;
+  font-family: var(--f-mono);
+  font-size: 0.75rem;
+  color: var(--text-3);
+  min-width: 14rem;
+}
+.masthead-meta div { display: flex; gap: 1rem; justify-content: space-between; }
+.masthead-meta span:last-child { color: var(--text-2); text-align: right; }
+
+.shell {
+  max-width: 82rem;
+  margin: 0 auto;
+  padding: 0 1.5rem 5rem;
+  display: grid;
+  grid-template-columns: 14rem minmax(0, 1fr);
+  gap: 3rem;
+  align-items: start;
+}
+
+.rail { position: sticky; top: 1.5rem; padding-top: 2.2rem; display: grid; gap: 1.2rem; }
+.rail h4 {
+  font-family: var(--f-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin: 0.7rem 0 0.3rem;
+}
+.rail a {
+  display: block;
+  padding: 0.22rem 0.5rem;
+  border-radius: 3px;
+  text-decoration: none;
+  color: var(--text-2);
+  font-family: var(--f-mono);
+  font-size: 0.78rem;
+  border-left: 2px solid transparent;
+}
+.rail a:hover { background: var(--surface-2); color: var(--text); }
+.rail a.current { border-left-color: var(--accent); background: var(--surface-2); color: var(--text); }
+
+main { padding-top: 2.2rem; min-width: 0; }
+
+h2 {
+  font-family: var(--f-display);
+  font-weight: 500;
+  font-size: 1.65rem;
+  letter-spacing: -0.01em;
+  margin: 3rem 0 0.3rem;
+  padding-top: 1.2rem;
+  border-top: 2px solid var(--line-strong);
+  scroll-margin-top: 1rem;
+}
+h2:first-of-type { margin-top: 0; border-top: none; padding-top: 0; }
+.group-note { color: var(--text-2); margin: 0 0 1.6rem; max-width: 70ch; }
+p { margin: 0 0 1rem; max-width: 74ch; }
+a { color: var(--accent); }
+code {
+  font-family: var(--f-mono);
+  font-size: 0.87em;
+  background: var(--surface-2);
+  padding: 0.08em 0.32em;
+  border-radius: 3px;
+}
+
+/* ---------- schema map ---------- */
+
+.map-wrap {
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--surface);
+  overflow-x: auto;
+  margin: 0 0 0.7rem;
+  padding: 0.5rem;
+}
+.map { display: block; width: 100%; min-width: 900px; height: auto; }
+.map .zone { fill: var(--ground); stroke: var(--line); stroke-dasharray: 3 3; }
+.map .zone-label {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  fill: var(--text-3);
+}
+.map .box { fill: var(--surface); stroke: var(--line-strong); stroke-width: 1; }
+.map .box.py  { stroke: var(--signal); stroke-width: 1.5; }
+.map .box.app { stroke: var(--accent); stroke-width: 1.5; }
+.map .box.both{ stroke: var(--danger); stroke-width: 1.5; }
+.map .tname { font-family: var(--f-mono); font-size: 12.5px; font-weight: 500; fill: var(--text); }
+.map .tnote { font-family: var(--f-body); font-size: 10.5px; fill: var(--text-3); }
+.map .link { fill: none; stroke: var(--line-strong); stroke-width: 1.4; }
+.map .link.key { stroke: var(--accent); stroke-width: 2; }
+.map .dot { fill: var(--line-strong); }
+.map .dot.key { fill: var(--accent); }
+.map-note { font-size: 0.8rem; color: var(--text-3); margin: 0 0 2rem; max-width: 74ch; }
+
+/* ---------- table cards ---------- */
+
+.tbl {
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--surface);
+  margin: 0 0 1.6rem;
+  overflow: hidden;
+  scroll-margin-top: 1rem;
+}
+.tbl-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.6rem 1rem;
+  padding: 0.6rem 0.9rem;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--line);
+}
+.tbl-head b {
+  font-family: var(--f-mono);
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+.tbl-head .desc { color: var(--text-2); font-size: 0.86rem; flex: 1 1 16rem; }
+.owner {
+  font-family: var(--f-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.12rem 0.45rem;
+  border-radius: 3px;
+  white-space: nowrap;
+  border: 1px solid;
+}
+.owner.py  { color: var(--signal); border-color: var(--signal); background: var(--signal-soft); }
+.owner.app { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
+.owner.both{ color: var(--danger); border-color: var(--danger); background: var(--danger-soft); }
+
+.cols { width: 100%; border-collapse: collapse; font-size: 0.83rem; }
+.cols th {
+  font-family: var(--f-mono);
+  font-weight: 500;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-3);
+  text-align: left;
+  padding: 0.42rem 0.9rem;
+  border-bottom: 1px solid var(--line);
+}
+.cols td {
+  padding: 0.36rem 0.9rem;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+.cols tr:last-child td { border-bottom: none; }
+.cols td:first-child { font-family: var(--f-mono); font-size: 0.79rem; white-space: nowrap; }
+.cols td:nth-child(2) { font-family: var(--f-mono); font-size: 0.76rem; color: var(--text-2); white-space: nowrap; }
+.cols td:nth-child(3) { color: var(--text-2); }
+.cols .pk td:first-child::after { content: " PK"; color: var(--accent); font-size: 0.7rem; }
+.cols .fk td:first-child::after { content: " FK"; color: var(--signal); font-size: 0.7rem; }
+.cols .uq td:first-child::after { content: " UQ"; color: var(--text-3); font-size: 0.7rem; }
+.table-scroll { overflow-x: auto; }
+
+.tbl-foot {
+  padding: 0.5rem 0.9rem;
+  border-top: 1px solid var(--line);
+  background: var(--ground);
+  font-size: 0.79rem;
+  color: var(--text-2);
+  display: grid;
+  gap: 0.25rem;
+}
+.tbl-foot b {
+  font-family: var(--f-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  font-weight: 500;
+}
+.tbl-foot code { background: none; padding: 0; color: var(--text-2); }
+
+pre {
+  background: var(--code-bg);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 0.9rem 1.1rem;
+  overflow-x: auto;
+  margin: 1rem 0 1.6rem;
+  font-size: 0.79rem;
+  line-height: 1.6;
+}
+pre code { font-family: var(--f-mono); background: none; padding: 0; white-space: pre; }
+
+.callout {
+  border-left: 3px solid var(--accent);
+  background: var(--accent-soft);
+  padding: 0.85rem 1.1rem;
+  margin: 1.2rem 0 1.8rem;
+  border-radius: 0 3px 3px 0;
+  max-width: 74ch;
+}
+.callout.warn { border-left-color: var(--signal); background: var(--signal-soft); }
+.callout p:last-child { margin-bottom: 0; }
+.callout b { font-family: var(--f-mono); font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; display: block; margin-bottom: 0.3rem; }
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.4rem;
+  font-size: 0.78rem;
+  color: var(--text-3);
+  margin: 0 0 2rem;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--surface);
+}
+
+.rel { width: 100%; border-collapse: collapse; font-size: 0.83rem; background: var(--surface); }
+.rel th {
+  font-family: var(--f-mono); font-weight: 500; font-size: 0.68rem;
+  text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-3);
+  text-align: left; padding: 0.45rem 0.85rem; background: var(--surface-2);
+  border-bottom: 1px solid var(--line); white-space: nowrap;
+}
+.rel td { padding: 0.4rem 0.85rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+.rel td:first-child, .rel td:nth-child(2) { font-family: var(--f-mono); font-size: 0.78rem; white-space: nowrap; }
+.rel tr:last-child td { border-bottom: none; }
+.rel-wrap { border: 1px solid var(--line); border-radius: 5px; overflow: hidden; overflow-x: auto; margin-bottom: 1.6rem; }
+.card { font-family: var(--f-mono); font-size: 0.73rem; color: var(--text-3); }
+
+@media (max-width: 900px) {
+  .shell { grid-template-columns: 1fr; gap: 0; }
+  .rail { position: static; padding-top: 1.4rem; }
+  .rail nav { display: grid; grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr)); }
+  main { padding-top: 1.4rem; }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style></head>
+<body>
+<header class="masthead">
+  <div class="masthead-inner">
+    <div>
+      <p class="eyebrow">AfterschoolDirectoryUSA · application design</p>
+      <h1>What Laravel does</h1>
+      <p class="standfirst">Reads what Python proposes, judges it, and owns everything the public sees.</p>
+    </div>
+    <div class="masthead-meta">
+      <div><span>Status</span><span>Draft for team review</span></div>
+      <div><span>Runtime</span><span>Laravel 13 · PHP 8.3</span></div>
+      <div><span>Writes</span><span>The live tables. Only it may</span></div>
+      <div><span>Reads</span><span>scraped_classes</span></div>
+    </div>
+  </div>
+</header>
+
+<div class="shell">
+  <aside class="rail"><nav id="rail-nav"></nav></aside>
+  <main>
+
+    <p style="margin-bottom:1.6rem">The ingestion half is at
+      <a href="python.html"><strong>What Python does</strong></a>. The reasoning behind the whole
+      system is in <a href="index.html"><strong>the architecture review</strong></a>.</p>
+
+    <h2 id="map">The map</h2>
+    <p class="group-note">Everything here is written by Laravel. The one orange box is Python's
+    output — the only thing crossing the seam, and Laravel reads it without ever writing it.</p>
+<div class="map-wrap"><svg class="map" viewBox="0 0 1160 600" role="img" aria-label="Laravel owns the catalogue, taxonomy, CMS and judging tables; it reads scraped_classes from Python"><rect class="zone" x="24" y="44" width="250" height="105" rx="6"/><text class="zone-label" x="40" y="34">From Python</text><rect class="zone" x="310" y="44" width="250" height="300" rx="6"/><text class="zone-label" x="326" y="34">The catalogue</text><rect class="zone" x="596" y="44" width="250" height="385" rx="6"/><text class="zone-label" x="612" y="34">Taxonomy · routing</text><rect class="zone" x="882" y="44" width="250" height="385" rx="6"/><text class="zone-label" x="898" y="34">People · CMS</text><rect class="zone" x="24" y="470" width="1108" height="90" rx="6"/><text class="zone-label" x="40" y="460">Judging — where a scraped row becomes a listing</text><path class="link key" d="M250,102 H326"/><path class="link " d="M431,124 V165"/><path class="link " d="M431,209 V250"/><path class="link " d="M536,272 H556 V527 H536"/><path class="link " d="M145,124 V527 H326"/><path class="link " d="M717,124 V294 H536"/><path class="link " d="M717,209 V294 H536"/><rect class="box py" x="40" y="80" width="210" height="44" rx="4"/><text class="tname" x="52" y="99">scraped_classes</text><text class="tnote" x="52" y="114">Python writes · we read</text><rect class="box app" x="326" y="80" width="210" height="44" rx="4"/><text class="tname" x="338" y="99">businesses</text><text class="tnote" x="338" y="114">the operator</text><rect class="box app" x="326" y="165" width="210" height="44" rx="4"/><text class="tname" x="338" y="184">venues</text><text class="tnote" x="338" y="199">704 of them, geocoded once</text><rect class="box app" x="326" y="250" width="210" height="44" rx="4"/><text class="tname" x="338" y="269">classes</text><text class="tnote" x="338" y="284">the unit the product is about</text><rect class="box app" x="612" y="80" width="210" height="44" rx="4"/><text class="tname" x="624" y="99">cities</text><text class="tnote" x="624" y="114">the /city/ segment</text><rect class="box app" x="612" y="165" width="210" height="44" rx="4"/><text class="tname" x="624" y="184">categories · synonyms</text><text class="tnote" x="624" y="199">football to soccer</text><rect class="box app" x="612" y="250" width="210" height="44" rx="4"/><text class="tname" x="624" y="269">hub_pages</text><text class="tnote" x="624" y="284">/city/category</text><rect class="box app" x="612" y="335" width="210" height="44" rx="4"/><text class="tname" x="624" y="354">url_redirects</text><text class="tnote" x="624" y="369">301s</text><rect class="box app" x="898" y="80" width="210" height="44" rx="4"/><text class="tname" x="910" y="99">users · roles</text><text class="tnote" x="910" y="114">admin · editor · reviewer · customer</text><rect class="box app" x="898" y="165" width="210" height="44" rx="4"/><text class="tname" x="910" y="184">pages · media · menus</text><text class="tnote" x="910" y="199">the CMS</text><rect class="box app" x="898" y="250" width="210" height="44" rx="4"/><text class="tname" x="910" y="269">settings</text><text class="tnote" x="910" y="284">site-wide</text><rect class="box app" x="898" y="335" width="210" height="44" rx="4"/><text class="tname" x="910" y="354">activity_log</text><text class="tnote" x="910" y="369">who changed what</text><rect class="box app" x="326" y="505" width="210" height="44" rx="4"/><text class="tname" x="338" y="524">review_items</text><text class="tnote" x="338" y="539">what Laravel would not decide</text><rect class="box app" x="612" y="505" width="210" height="44" rx="4"/><text class="tname" x="624" y="524">merge_candidates</text><text class="tnote" x="624" y="539">are these the same?</text></svg></div>
+
+    <h2 id="judging">Judging — the whole point</h2>
+    <div class="tree">scraped_classes (new | changed)
+        │
+   JudgeClass
+        ├── confident ──► upsert business + venue + class ──► <span class="own">live</span>
+        └── unsure    ──► review_item ──► a human decides ──► <span class="own">live</span></div>
+
+    <div class="rel-wrap"><table class="rel">
+      <thead><tr><th>#</th><th>Sends it to a human</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Missing fields — no age, no venue, no dates</td></tr>
+        <tr><td>2</td><td>The venue will not resolve to coordinates</td></tr>
+        <tr><td>3</td><td>Weak source — prose extraction rather than a clean endpoint</td></tr>
+        <tr><td>4</td><td>It conflicts with a decision a human already made</td></tr>
+        <tr><td>5</td><td>A suspicious change — price or age jumped on a live class</td></tr>
+        <tr><td>6</td><td>Not obviously for kids — <code>ages 7–99</code>, or an adult class in a mixed catalogue</td></tr>
+      </tbody>
+    </table></div>
+    <p>Everything else publishes without a person. At LA scale that is the difference between dozens of reviews and thousands.</p>
+
+    <h2 id="tables">The tables</h2>
+<div class="tbl" id="t-businesses"><div class="tbl-head"><b>businesses</b><span class="owner app">Laravel writes</span><span class="desc">The operator. For a municipal catalogue this is the source itself; for a provider site, the site owner.</span></div><div class="table-scroll"><table class="cols"><thead><tr><th>Column</th><th>Type</th><th>Note</th></tr></thead><tbody><tr class="pk"><td>id</td><td>bigint</td><td></td></tr><tr class="uq"><td>slug</td><td>citext</td><td>unique per city</td></tr><tr class=""><td>name</td><td>text</td><td></td></tr><tr class=""><td>description</td><td>text null</td><td></td></tr><tr class=""><td>phone / email / website</td><td>text null</td><td></td></tr><tr class="fk"><td>primary_city_id</td><td>bigint</td><td>to cities</td></tr><tr class=""><td>completeness</td><td>numeric(3,2)</td><td></td></tr><tr class=""><td>is_publishable / is_indexable</td><td>boolean</td><td>two audiences, two rules</td></tr><tr class=""><td>meta_title / meta_description</td><td>text null</td><td>generated, editor can override</td></tr><tr class=""><td>search_vector</td><td>tsvector generated</td><td></td></tr><tr class=""><td>created_at / updated_at / deleted_at</td><td>timestamptz</td><td>soft delete</td></tr></tbody></table></div></div><div class="tbl" id="t-venues"><div class="tbl-head"><b>venues</b><span class="owner app">Laravel writes</span><span class="desc">The named facility. Geocoded once, reused by every class held there.</span></div><div class="table-scroll"><table class="cols"><thead><tr><th>Column</th><th>Type</th><th>Note</th></tr></thead><tbody><tr class="pk"><td>id</td><td>bigint</td><td></td></tr><tr class=""><td>name</td><td>text</td><td>&quot;Agoura Hills Rec &amp; Event Ctr&quot;</td></tr><tr class=""><td>address_line</td><td>text null</td><td></td></tr><tr class="fk"><td>city_id</td><td>bigint null</td><td>to cities</td></tr><tr class=""><td>postal_code</td><td>text null</td><td></td></tr><tr class=""><td>geog</td><td>geography(Point,4326) null</td><td>metres, no projection maths</td></tr><tr class=""><td>geocode_confidence</td><td>numeric(3,2) null</td><td>from the match type, never invented</td></tr><tr class=""><td>geocode_source</td><td>enum null</td><td><code>overture</code> · <code>census</code> · <code>nominatim</code> · <code>human</code></td></tr><tr class=""><td>resolved_at</td><td>timestamptz null</td><td></td></tr></tbody></table></div><div class="tbl-foot"><b>Measured</b>6,294 classes reference only <strong>704 distinct venues</strong>, and the top ten cover 26% of classes. Resolution is ~700 lookups done once, not matching at scale. 11% are online or unspecified and carry no location at all</div></div><div class="tbl" id="t-classes"><div class="tbl-head"><b>classes</b><span class="owner app">Laravel writes</span><span class="desc">The unit the product is about. One row per class, upserted from a judged scraped row.</span></div><div class="table-scroll"><table class="cols"><thead><tr><th>Column</th><th>Type</th><th>Note</th></tr></thead><tbody><tr class="pk"><td>id</td><td>bigint</td><td></td></tr><tr class="fk"><td>business_id</td><td>bigint</td><td>to businesses</td></tr><tr class="fk"><td>venue_id</td><td>bigint null</td><td>to venues. Null for online classes</td></tr><tr class="uq"><td>slug</td><td>citext</td><td>unique per business</td></tr><tr class=""><td>name</td><td>text</td><td></td></tr><tr class=""><td>description</td><td>text null</td><td></td></tr><tr class=""><td>age_min / age_max</td><td>int null</td><td></td></tr><tr class=""><td>starts_on / ends_on</td><td>date null</td><td>a range, not a schedule</td></tr><tr class=""><td>days</td><td>text null</td><td>0% on endpoints today</td></tr><tr class=""><td>price_text</td><td>text null</td><td>0% on endpoints today</td></tr><tr class=""><td>status</td><td>enum</td><td><code>upcoming</code> · <code>running</code> · <code>ended</code> — derived from ends_on</td></tr><tr class=""><td>detail_url</td><td>text</td><td>back to the source</td></tr><tr class="fk"><td>scraped_class_id</td><td>bigint</td><td>what it came from. Provenance without a claims table</td></tr><tr class=""><td>completeness / is_publishable / is_indexable</td><td></td><td></td></tr><tr class=""><td>meta_title / meta_description</td><td>text null</td><td></td></tr><tr class=""><td>search_vector</td><td>tsvector generated</td><td></td></tr><tr class=""><td>created_at / updated_at / deleted_at</td><td>timestamptz</td><td>soft delete</td></tr></tbody></table></div><div class="tbl-foot"><b>No occurrences table</b>Endpoint data gives a date <em>range</em>, and days are 0%. Expanding a range without days would be inventing instances. &quot;What is on this weekend&quot; is a range-overlap query; occurrences return when a source gives us days</div></div><div class="tbl" id="t-review_items"><div class="tbl-head"><b>review_items</b><span class="owner app">Laravel writes</span><span class="desc">What Laravel would not decide alone. Exceptions only.</span></div><div class="table-scroll"><table class="cols"><thead><tr><th>Column</th><th>Type</th><th>Note</th></tr></thead><tbody><tr class="pk"><td>id</td><td>bigint</td><td></td></tr><tr class="fk"><td>scraped_class_id</td><td>bigint null</td><td></td></tr><tr class="fk"><td>class_id</td><td>bigint null</td><td>for changes to something already live</td></tr><tr class=""><td>reason</td><td>enum</td><td>the six conditions above</td></tr><tr class=""><td>detail</td><td>jsonb</td><td>what was missing, what conflicted</td></tr><tr class=""><td>status</td><td>enum</td><td><code>open</code> · <code>accepted</code> · <code>rejected</code></td></tr><tr class=""><td>decided_by / decided_at</td><td></td><td></td></tr></tbody></table></div></div><div class="tbl" id="t-merge_candidates"><div class="tbl-head"><b>merge_candidates</b><span class="owner app">Laravel writes</span><span class="desc">Two businesses that might be one. The answer is remembered either way.</span></div><div class="table-scroll"><table class="cols"><thead><tr><th>Column</th><th>Type</th><th>Note</th></tr></thead><tbody><tr class="pk"><td>id</td><td>bigint</td><td></td></tr><tr class="fk"><td>business_a_id / business_b_id</td><td>bigint</td><td></td></tr><tr class=""><td>signals</td><td>jsonb</td><td>name similarity, shared venue, shared phone or domain</td></tr><tr class=""><td>score</td><td>numeric(3,2)</td><td></td></tr><tr class=""><td>verdict</td><td>enum</td><td><code>pending</code> · <code>same</code> · <code>different</code></td></tr><tr class=""><td>decided_by / decided_at</td><td></td><td></td></tr></tbody></table></div><div class="tbl-foot"><b>Different is remembered too</b>Otherwise the same pair returns every crawl and people stop reading the queue. A merge keeps both source links, so a merged business still shows it appears in two catalogues</div></div><div class="tbl" id="t-users"><div class="tbl-head"><b>users · roles · permissions</b><span class="owner app">Laravel writes</span><span class="desc">One identity table. Admin and customer are roles on the same user.</span></div><div class="table-scroll"><table class="cols"><thead><tr><th>Column</th><th>Type</th><th>Note</th></tr></thead><tbody><tr class="pk"><td>id</td><td>bigint</td><td></td></tr><tr class="uq"><td>email</td><td>citext</td><td></td></tr><tr class=""><td>password</td><td>text null</td><td>null for Google-only customers</td></tr><tr class=""><td>two_factor_secret</td><td>text null</td><td>required for admin, editor, reviewer</td></tr><tr class=""><td>stripe_id / pm_type / pm_last_four</td><td>text null</td><td>Cashier. No card data</td></tr><tr class=""><td>roles</td><td>via model_has_roles</td><td><code>admin</code> · <code>editor</code> · <code>reviewer</code> · <code>customer</code></td></tr></tbody></table></div><div class="tbl-foot"><b>Only admin touches sources and terms verdicts</b>A verdict change permits crawling a host — a legal decision, not a content one<b>No public path creates a privileged role</b>Admins are invited, never registered</div></div><div class="tbl" id="t-cms"><div class="tbl-head"><b>pages · media · menus · settings</b><span class="owner app">Laravel writes</span><span class="desc">The CMS essentials that are not directory data.</span></div><div class="table-scroll"><table class="cols"><thead><tr><th>Column</th><th>Type</th><th>Note</th></tr></thead><tbody><tr class=""><td>pages</td><td></td><td>About, Privacy, Terms, Contact — slug, body, meta</td></tr><tr class=""><td>media</td><td></td><td>images and logos, with alt text</td></tr><tr class=""><td>menus</td><td></td><td>header and footer navigation</td></tr><tr class=""><td>settings</td><td></td><td>site name, contact, social, defaults</td></tr></tbody></table></div></div><div class="tbl" id="t-taxonomy"><div class="tbl-head"><b>cities · categories · category_synonyms · hub_pages · url_redirects</b><span class="owner app">Laravel writes</span><span class="desc">How a listing is categorised, found, and addressed.</span></div><div class="table-scroll"><table class="cols"><thead><tr><th>Column</th><th>Type</th><th>Note</th></tr></thead><tbody><tr class=""><td>cities</td><td></td><td>the <code>/city/</code> segment; carries metro for per-metro sitemaps</td></tr><tr class=""><td>categories</td><td></td><td>eight top level, plus subcategories</td></tr><tr class=""><td>category_synonyms</td><td></td><td>soccer/football · coding/STEM · tumbling/gymnastics</td></tr><tr class=""><td>hub_pages</td><td></td><td><code>/city/category</code> — intro copy and meta live here, so a hub is not a thin page</td></tr><tr class=""><td>url_redirects</td><td></td><td>a renamed slug 301s</td></tr></tbody></table></div><div class="tbl-foot"><b>Category is not in the detail URL</b>A class sits in several categories and its categories differ from its business's. It appears on every matching hub and keeps one canonical URL — so recategorising writes no redirects at all</div></div><div class="tbl" id="t-activity_log"><div class="tbl-head"><b>activity_log</b><span class="owner app">Laravel writes</span><span class="desc">Which human did what. Append-only.</span></div><div class="table-scroll"><table class="cols"><thead><tr><th>Column</th><th>Type</th><th>Note</th></tr></thead><tbody><tr class=""><td>log_name / description</td><td>text</td><td><code>source.updated</code> · <code>class.approved</code></td></tr><tr class=""><td>subject_type / subject_id</td><td></td><td>what was acted on</td></tr><tr class=""><td>causer_type / causer_id</td><td></td><td><strong>who did it</strong></td></tr><tr class=""><td>properties</td><td>jsonb</td><td>old and new values</td></tr><tr class=""><td>created_at</td><td>timestamptz</td><td></td></tr></tbody></table></div><div class="tbl-foot"><b>Always audited</b>A terms verdict moving Red to Green is the most consequential edit in the system</div></div>
+    <h2 id="roles">Roles</h2>
+    <div class="rel-wrap"><table class="rel">
+      <thead><tr><th></th><th>admin</th><th>editor</th><th>reviewer</th><th>customer</th></tr></thead>
+      <tbody>
+        <tr><td>Review queue</td><td>✅</td><td>✅</td><td>✅</td><td>—</td></tr>
+        <tr><td>Businesses, venues, classes</td><td>✅</td><td>✅</td><td>—</td><td>—</td></tr>
+        <tr><td>Pages, media, menus</td><td>✅</td><td>✅</td><td>—</td><td>—</td></tr>
+        <tr><td><strong>Sources and terms verdicts</strong></td><td>✅</td><td>—</td><td>—</td><td>—</td></tr>
+        <tr><td>Settings, users, invites</td><td>✅</td><td>—</td><td>—</td><td>—</td></tr>
+        <tr><td>Public site and favourites</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2 id="sources">Sources and verdicts</h2>
+    <div class="tree">admin pastes a URL
+  └─► source created, verdict: <span class="c">unknown</span>        <span class="own">nothing fetches</span>
+  └─► Laravel queues a terms-check run
+  └─► Python proposes a verdict + the quoted clause
+  └─► verdict: <span class="c">pending</span>                        <span class="own">still nothing fetches</span>
+  └─► admin confirms or overrides</div>
+    <p><strong>Adding a source is a paste.</strong> What you wait for is a confirmation click, not an
+    engineering ticket. <code>pending</code> is visibly waiting, not silently dead.</p>
+    <p><strong>Run now</strong> inserts a run with <code>reason: admin</code> — same queue, same gate,
+    same politeness as the nightly run. It queues rather than scrapes, and the row shows
+    <code>queued → running → done · 42 classes</code>. A double press is harmless: a partial unique
+    index prevents two active runs for one source.</p>
+
+    <h2 id="search">Search and SEO</h2>
+    <div class="rel-wrap"><table class="rel">
+      <thead><tr><th>Concern</th><th>How</th></tr></thead>
+      <tbody>
+        <tr><td>Full text</td><td><strong>GIN</strong> on a generated tsvector — class, description, business, venue, category synonyms</td></tr>
+        <tr><td>Distance</td><td><strong>GiST</strong> on <code>venues.geog</code></td></tr>
+        <tr><td>Age, dates, category</td><td>Plain indexed columns. One query, three indexes</td></tr>
+        <tr><td>URLs</td><td><code>/city/business</code> · <code>/city/business/class</code>. Category lives on hubs</td></tr>
+        <tr><td>Thin pages</td><td>The indexability gate — a class with only a name stays out of the index</td></tr>
+        <tr><td>Structured data</td><td><code>LocalBusiness</code>, <code>Course</code>, <code>ItemList</code>, <code>BreadcrumbList</code></td></tr>
+        <tr><td>Sitemaps</td><td>From indexable rows, split by metro, submitted per metro</td></tr>
+        <tr><td>Expired classes</td><td>Shown, ranked below live ones, <strong>excluded from the index</strong></td></tr>
+      </tbody>
+    </table></div>
+    <div class="callout">
+      <b>What 90% dates unlock</b>
+      <p>Endpoint sources carry real start and end dates, so <code>Course</code> + <code>CourseInstance</code>
+      becomes genuinely emittable — a rich-result opportunity the earlier design had written off.
+      Emit the instance only where dates exist; without them it is worse than omitting it.</p>
+    </div>
+
+    <h2 id="payments">Payments — Phase 3</h2>
+    <p><strong>Parents pay; businesses are listed free</strong>, so money never touches ranking.
+    Cashier owns <code>subscriptions</code>; we add <code>plans</code> and <code>plan_entitlements</code>.</p>
+    <div class="callout warn">
+      <b>Stripe owns the price</b>
+      <p><code>amount_cents</code> is a display cache synced by webhook and read-only in the admin.
+      If an admin can edit a price locally, a parent is eventually billed an amount the page did not
+      show them. Plans are retired, never deleted — old subscriptions still point at them.</p>
+      <p>Customers cancel themselves, running to the end of the paid period. An admin may cancel:
+      audited, and the customer is emailed. <strong>No refund UI</strong> — refunds stay in Stripe.</p>
+    </div>
+
+    <h2 id="open">Still open</h2>
+    <div class="rel-wrap"><table class="rel">
+      <thead><tr><th>Item</th><th>Why it matters</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Category assignment</strong></td><td>Nothing assigns one, and hubs, filters and search all need it</td></tr>
+        <tr><td>Kid-relevance threshold</td><td><code>ages 7–99</code> is an adult class. The filter exists in Python; the rule does not</td></tr>
+        <tr><td>Provider websites</td><td>Sparse fields, 0% dates — no whole classes to propose. Same table mostly empty, or a different path</td></tr>
+        <tr><td>Venue resolution rate</td><td>704 names; the hit rate against Overture and Census is unmeasured. Two hours of work</td></tr>
+        <tr><td>Listing images</td><td>No requirement either way. With the client</td></tr>
+        <tr><td>Cache invalidation</td><td>What is purged when a class changes</td></tr>
+      </tbody>
+    </table></div>
+
+  </main>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var GROUPS = [
+    ["Overview", [["map","the map"],["judging","judging"],["roles","roles"]]],
+    ["Tables", [["t-businesses","businesses"],["t-venues","venues"],["t-classes","classes"],
+                ["t-review_items","review_items"],["t-merge_candidates","merge_candidates"],
+                ["t-users","users · roles"],["t-cms","pages · media"],["t-taxonomy","taxonomy"],
+                ["t-activity_log","activity_log"]]],
+    ["Reference", [["sources","sources · verdicts"],["search","search · SEO"],
+                   ["payments","payments"],["open","open questions"]]]
+  ];
+  var nav = document.getElementById("rail-nav");
+  GROUPS.forEach(function (g) {
+    var h = document.createElement("h4"); h.textContent = g[0]; nav.appendChild(h);
+    g[1].forEach(function (r) {
+      var a = document.createElement("a");
+      a.href = "#" + r[0]; a.textContent = r[1]; a.dataset.target = r[0];
+      nav.appendChild(a);
+    });
+  });
+  var links = Array.prototype.slice.call(nav.querySelectorAll("a"));
+  if ("IntersectionObserver" in window) {
+    var obs = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        links.forEach(function (l) { l.classList.toggle("current", l.dataset.target === e.target.id); });
+      });
+    }, { rootMargin: "-8% 0px -80% 0px" });
+    links.forEach(function (l) { var el = document.getElementById(l.dataset.target); if (el) obs.observe(el); });
+  }
+})();
+</script>
+
+</body>
+</html>
